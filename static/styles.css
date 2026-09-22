@@ -1628,3 +1628,21 @@ nav {
     gap: 8px;
   }
 }
+/* FORCE TEST */
+html {
+  filter: grayscale(100%) !important;
+}
+
+body {
+  background: #ffffff !important;
+  color: #111111 !important;
+}
+
+* {
+  --teal: #555555 !important;
+  --teal-dark: #222222 !important;
+  --mint: #eeeeee !important;
+  --orange: #777777 !important;
+  --pink: #888888 !important;
+  --yellow: #cccccc !important;
+}
