@@ -174,35 +174,6 @@ def init_db() -> None:
             if name not in integration_columns:
                 connection.execute(f"ALTER TABLE integrations ADD COLUMN {name} {definition}")
 
-        # Seed the default App Connections for existing users as well as new users.
-        # Registration already creates these rows for new accounts, but existing
-        # accounts need the same catalog entries restored automatically.
-        default_integrations = [
-            ("Slack", "Communication", "Send ingestion alerts and daily summaries."),
-            ("HubSpot", "CRM", "Sync normalized contacts to a CRM."),
-            ("Google Sheets", "Workspace", "Publish clean records to a sheet."),
-            ("REST API", "Developer tools", "Connect a client-owned HTTP endpoint."),
-        ]
-
-        users = connection.execute("SELECT id FROM users").fetchall()
-
-        for user in users:
-            for name, category, description in default_integrations:
-                exists = connection.execute(
-                    "SELECT 1 FROM integrations WHERE user_id = ? AND name = ?",
-                    (user["id"], name),
-                ).fetchone()
-
-                if not exists:
-                    connection.execute(
-                        """
-                        INSERT INTO integrations
-                        (user_id, name, category, status, description)
-                        VALUES (?, ?, ?, 'available', ?)
-                        """,
-                        (user["id"], name, category, description),
-                    )
-
 
 class Credentials(BaseModel):
     email: str
