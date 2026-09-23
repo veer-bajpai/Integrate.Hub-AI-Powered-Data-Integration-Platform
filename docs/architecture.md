@@ -4,7 +4,7 @@ This diagram describes the runtime path for the local and Docker deployments. Th
 
 ```mermaid
 flowchart TB
-    Browser[Browser dashboard\nstatic/index.html + app.js + styles.css]
+    Client[API client]
     API[FastAPI\napp/main.py]
     Auth[JWT authentication\nand workspace scoping]
     Ingest[Ingestion services\nCSV, webhook, REST]
@@ -31,12 +31,12 @@ flowchart TB
 
 ## Responsibilities
 
-| Component | Responsibility |
-| --- | --- |
-| Browser dashboard | Authentication forms, workspace navigation, uploads, connector actions, and record display. |
-| FastAPI application | Route handling, token verification, workspace ownership checks, connector orchestration, and static-file serving. |
-| Ingestion services | Read CSV data, verify webhook signatures, fetch REST JSON, and write ingestion logs. |
-| Normalization | Apply connector mappings, assign source metadata, and mark duplicate records. |
-| SQLite | Store users, connectors, records, documents, integrations, and ingestion logs. |
-| Upload storage | Keep document bytes outside SQLite while storing metadata and ownership in the database. |
+| Component           | Responsibility                                                                                                 |
+| ------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Browser dashboard   | Authentication forms, workspace navigation, uploads, connector actions, and record display.                    |
+| FastAPI application | Route handling, token verification, workspace ownership checks, and connector orchestration.                   |
+| Ingestion services  | Read CSV data, verify webhook signatures, fetch REST JSON, and write ingestion logs.                           |
+| Normalization       | Apply connector mappings, assign source metadata, and mark duplicate records.                                  |
+| SQLite              | Store users, connectors, records, documents, integrations, and ingestion logs.                                 |
+| Upload storage      | Keep document bytes outside SQLite while storing metadata and ownership in the database.                       |
 | Gemini and fallback | Provide mapping suggestions and grounded assistant replies, with local behavior when Gemini is not configured. |

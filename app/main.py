@@ -572,3 +572,5 @@ def static_files(path: str) -> FileResponse:
     if file.exists() and file.is_file():
         return FileResponse(file)
     return FileResponse(ROOT / "static" / "index.html")
+
+

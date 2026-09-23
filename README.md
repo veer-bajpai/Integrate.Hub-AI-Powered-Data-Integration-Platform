@@ -2,7 +2,7 @@
 
 > A focused control plane for onboarding client data into clean, usable records.
 
-IntegrateHub is a small, self-contained data integration workspace built for client onboarding and integration operations. It accepts CSV files, signed webhooks, and REST sources; normalizes incoming records; flags duplicate emails; stores client documents; and exposes the result through a dashboard and API.
+IntegrateHub is a small, self-contained data integration API built for client onboarding and integration operations. It accepts CSV files, signed webhooks, and REST sources; normalizes incoming records; flags duplicate emails; and stores client documents for API consumers.
 
 The AI layer is deliberately optional. When `GEMINI_API_KEY` is configured, Gemini suggests field mappings and answers questions about workspace facts. When it is absent or unavailable, IntegrateHub uses deterministic local behavior so the application remains runnable without a model provider.
 
@@ -31,11 +31,11 @@ The AI layer is deliberately optional. When `GEMINI_API_KEY` is configured, Gemi
 
 ## Architecture
 
-IntegrateHub is a single FastAPI process serving both the JSON API and the static frontend. SQLite is created at startup at `data/integratehub.db`; uploaded files are written to `data/uploads/`. Gemini and external REST sources are optional outbound dependencies.
+IntegrateHub is a single FastAPI process serving a JSON API. SQLite is created at startup at `data/integratehub.db`; uploaded files are written to `data/uploads/`. Gemini and external REST sources are optional outbound dependencies.
 
 ```mermaid
 flowchart LR
-	Browser[Browser dashboard\nstatic HTML / CSS / JS] -->|HTTP + JWT| API[FastAPI application\napp/main.py]
+	Client[API client] -->|HTTP + JWT| API[FastAPI application\napp/main.py]
 	API --> Auth[Auth and workspace scope]
 	API --> Ingest[CSV / webhook / REST ingestion]
 	API --> AI[Gemini adapter\noptional]
@@ -60,15 +60,15 @@ Register with a name, email, and password, or use an existing account. The API r
 
 Connectors support three kinds:
 
-| Kind | Input | Configuration |
-| --- | --- | --- |
-| `csv` | `POST /api/ingest/csv` | Created automatically on first CSV upload, or created explicitly |
-| `webhook` | `POST /api/webhooks/{connector_id}` | Requires an encrypted signing secret and `X-Webhook-Signature` |
-| `rest` | `POST /api/connectors/{connector_id}/sync` | Requires an endpoint URL and optionally a bearer token |
+| Kind      | Input                                      | Configuration                                                    |
+| --------- | ------------------------------------------ | ---------------------------------------------------------------- |
+| `csv`     | `POST /api/ingest/csv`                     | Created automatically on first CSV upload, or created explicitly |
+| `webhook` | `POST /api/webhooks/{connector_id}`        | Requires an encrypted signing secret and `X-Webhook-Signature`   |
+| `rest`    | `POST /api/connectors/{connector_id}/sync` | Requires an endpoint URL and optionally a bearer token           |
 
 ### 3. Normalize and review
 
-CSV and JSON rows are stored as JSON with their source, connector, status, external ID, and creation time. Email is the primary deduplication key. The dashboard exposes record totals, duplicate counts, connector health, recent ingestion logs, and the latest 100 records.
+CSV and JSON rows are stored as JSON with their source, connector, status, external ID, and creation time. Email is the primary deduplication key. The `GET /api/dashboard` endpoint exposes record totals, duplicate counts, connector health, recent ingestion logs, and the latest 100 records.
 
 ### 4. Add context and destinations
 
@@ -94,7 +94,7 @@ Copy-Item .env.example .env
 uvicorn app.main:app --reload
 ```
 
-Open [http://127.0.0.1:8000](http://127.0.0.1:8000). Create an account in the registration form, then explore the dashboard. The sample file at [data/sample_contacts.csv](data/sample_contacts.csv) can be imported from the Documents view or with the API.
+Use an API client against `http://127.0.0.1:8000`. Register with `POST /api/auth/register`, then use the returned JWT for authenticated requests. The sample file at [data/sample_contacts.csv](data/sample_contacts.csv) can be imported with `POST /api/ingest/csv`.
 
 On macOS or Linux, use `source .venv/bin/activate` and `cp .env.example .env` in place of the PowerShell commands.
 
@@ -115,15 +115,15 @@ The image runs Uvicorn as the unprivileged `integratehub` user. Docker and Compo
 
 Copy `.env.example` to `.env` before starting the server:
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `JWT_SECRET` | `dev-only-change-me` in code | Signs login tokens and derives the Fernet key used for connector secrets. Set a long random value outside local demos. |
-| `GEMINI_API_KEY` | empty | Enables Gemini mapping suggestions and assistant responses. Empty means local fallback behavior. |
-| `GEMINI_MODEL` | `gemini-2.0-flash` | Gemini model name used by the optional AI layer. |
-| `OAUTH_BASE_URL` | `http://127.0.0.1:8000` | Public base URL used to build OAuth callback URLs. Use your HTTPS deployment URL outside local development. |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | empty | Google OAuth credentials for Google Sheets sign-in. |
-| `SLACK_CLIENT_ID` / `SLACK_CLIENT_SECRET` | empty | Slack OAuth credentials for Slack sign-in. |
-| `HUBSPOT_CLIENT_ID` / `HUBSPOT_CLIENT_SECRET` | empty | HubSpot OAuth credentials for HubSpot sign-in. |
+| Variable                                      | Default                      | Purpose                                                                                                                |
+| --------------------------------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `JWT_SECRET`                                  | `dev-only-change-me` in code | Signs login tokens and derives the Fernet key used for connector secrets. Set a long random value outside local demos. |
+| `GEMINI_API_KEY`                              | empty                        | Enables Gemini mapping suggestions and assistant responses. Empty means local fallback behavior.                       |
+| `GEMINI_MODEL`                                | `gemini-2.0-flash`           | Gemini model name used by the optional AI layer.                                                                       |
+| `OAUTH_BASE_URL`                              | `http://127.0.0.1:8000`      | Public base URL used to build OAuth callback URLs. Use your HTTPS deployment URL outside local development.            |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`   | empty                        | Google OAuth credentials for Google Sheets sign-in.                                                                    |
+| `SLACK_CLIENT_ID` / `SLACK_CLIENT_SECRET`     | empty                        | Slack OAuth credentials for Slack sign-in.                                                                             |
+| `HUBSPOT_CLIENT_ID` / `HUBSPOT_CLIENT_SECRET` | empty                        | HubSpot OAuth credentials for HubSpot sign-in.                                                                         |
 
 Never commit `.env`, database files, or uploaded documents. They are ignored by the repository's `.gitignore`.
 
@@ -143,17 +143,17 @@ Copy each client ID and secret into `.env`, restart the server, and use **App co
 
 Authentication uses `Authorization: Bearer <token>` except for webhook ingestion, which is authenticated by its HMAC signature.
 
-| Area | Routes |
-| --- | --- |
-| Health | `GET /health` |
-| Auth | `POST /api/auth/register`, `POST /api/auth/login` |
-| Workspace | `GET /api/dashboard` |
-| Connectors | `GET/POST /api/connectors`, `GET /api/connectors/{id}/health`, `POST /api/connectors/{id}/sync` |
-| Ingestion | `POST /api/ingest/csv`, `POST /api/webhooks/{connector_id}` |
-| AI | `POST /api/connectors/suggest-mapping`, `POST /api/clients/assistant/chat` |
-| Records | `GET /api/records` |
-| Documents | `GET/POST /api/documents`, `GET /api/documents/{id}/download` |
-| App connections | `GET /api/integrations`, `POST /api/integrations/{id}` |
+| Area            | Routes                                                                                          |
+| --------------- | ----------------------------------------------------------------------------------------------- |
+| Health          | `GET /health`                                                                                   |
+| Auth            | `POST /api/auth/register`, `POST /api/auth/login`                                               |
+| Workspace       | `GET /api/dashboard`                                                                            |
+| Connectors      | `GET/POST /api/connectors`, `GET /api/connectors/{id}/health`, `POST /api/connectors/{id}/sync` |
+| Ingestion       | `POST /api/ingest/csv`, `POST /api/webhooks/{connector_id}`                                     |
+| AI              | `POST /api/connectors/suggest-mapping`, `POST /api/clients/assistant/chat`                      |
+| Records         | `GET /api/records`                                                                              |
+| Documents       | `GET/POST /api/documents`, `GET /api/documents/{id}/download`                                   |
+| App connections | `GET /api/integrations`, `POST /api/integrations/{id}`                                          |
 
 ### Signed webhook example
 
@@ -182,10 +182,6 @@ IntegrateHub/
 ├── data/
 │   ├── sample_contacts.csv     Importable sample data
 │   └── uploads/                Runtime document storage
-├── static/
-│   ├── index.html               Dashboard markup
-│   ├── app.js                   Frontend state and API calls
-│   └── styles.css               Dashboard styles
 ├── docs/
 │   └── architecture.md         Standalone architecture diagram and notes
 ├── Dockerfile
@@ -223,7 +219,7 @@ The second command should print `{'status': 'ok', 'database': 'connected'}` and 
 - The app catalog records connection state; Slack, HubSpot, and Google Sheets delivery is not implemented yet.
 - CSV ingestion parses UTF-8 CSV and performs email-based duplicate detection, but does not provide a full schema validation report.
 - Gemini requests are made synchronously inside API handlers and fall back on provider errors.
-- The frontend stores the JWT in browser `localStorage`; production deployments should consider an HttpOnly cookie flow.
+- API clients must store JWTs securely; production deployments should consider an HttpOnly cookie flow for browser clients.
 - The default CORS policy allows all origins and should be restricted for a public deployment.
 
 ## License

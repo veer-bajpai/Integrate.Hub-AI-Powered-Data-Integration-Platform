@@ -3,625 +3,541 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <title>IntegrateHub</title>
-
-    <!-- Fonts -->
+    <meta name="theme-color" content="#171717" />
+    <title>IntegrateHub | Your AI data workspace</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
     <link
-      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
-
-    <!-- Base / feature styles -->
-    <link rel="stylesheet" href="/technical.css" />
-    <link rel="stylesheet" href="/premium.css" />
-
-    <!-- MAIN THEME — intentionally loaded LAST -->
-    <link rel="stylesheet" href="/styles.css?v=20260922theme" />
+    <script src="https://unpkg.com/lucide@0.468.0"></script>
+    <link rel="stylesheet" href="/styles.css?v=20260923studio3" />
   </head>
-
   <body>
-    <!-- =====================================================
-       TOAST
-       ===================================================== -->
+    <div id="toast" class="toast" role="status"></div>
 
-    <div id="toast" class="toast"></div>
-
-    <!-- =====================================================
-       AUTHENTICATION
-       ===================================================== -->
-
-    <main id="auth-view" class="auth-shell">
-      <section class="auth-art">
-        <div class="brand-mark">
-          <span class="brand-dot"></span>
-          IntegrateHub
+    <main id="auth-view" class="auth-view">
+      <section class="auth-visual">
+        <div class="brand">
+          <span class="brand-glyph"><i></i><i></i><i></i></span
+          ><span>IntegrateHub</span>
         </div>
-
-        <div class="art-content">
-          <p class="eyebrow">THE CONTROL PLANE FOR CLIENT DATA</p>
-
-          <h1>Make every source feel native.</h1>
-
-          <p>
-            Connect messy inputs, keep records clean, and let your team ship
-            integrations with confidence.
-          </p>
-
-          <div class="signal-card">
-            <div>
-              <span class="signal-label"> LIVE PIPELINE </span>
-
-              <strong> Acme workspace </strong>
-            </div>
-
-            <span class="pulse"></span>
-
-            <span class="signal-ok"> 98.6% healthy </span>
+        <div class="visual-copy">
+          <p class="kicker">YOUR AI DATA WORKSPACE</p>
+          <h1>Connect your data in one place.</h1>
+          <p>Bring in data, keep it clean, and help your team move faster.</p>
+          <div class="visual-signal">
+            <span class="signal-live"><b></b> WORKSPACE STATUS</span
+            ><strong>Your workspace is ready</strong
+            ><span class="signal-arrow"
+              ><i data-lucide="arrow-up-right"></i
+            ></span>
           </div>
         </div>
-
-        <div class="art-footer">
-          <span>AI-assisted operations</span>
-          <span>v2.0</span>
+        <div class="visual-foot">
+          <span>AI-assisted operations</span><span>INTEGRATEHUB / 02</span>
         </div>
       </section>
-
       <section class="auth-panel">
-        <div class="auth-box">
+        <div class="auth-card">
           <div class="mobile-brand">
-            <span class="brand-dot"></span>
-            IntegrateHub
+            <div class="brand">
+              <span class="brand-glyph"><i></i><i></i><i></i></span
+              ><span>IntegrateHub</span>
+            </div>
           </div>
-
-          <p class="eyebrow">WELCOME BACK</p>
-
-          <h2>Sign in to your workspace</h2>
-
-          <p class="muted">
-            Use the demo account to explore the full workspace.
+          <p class="kicker">SIGN IN</p>
+          <h2>Welcome back.</h2>
+          <p class="auth-subtitle">
+            Sign in to continue, or create a new workspace.
           </p>
-
-          <form id="login-form">
-            <label>
-              Email
-              <input
+          <form id="login-form" class="auth-form">
+            <label
+              >Email<input
                 id="email"
                 type="email"
-                value="demo@integratehub.dev"
+                placeholder="you@company.com"
                 required
-              />
-            </label>
-
-            <label>
-              Password
-              <input id="password" type="password" value="demo1234" required />
-            </label>
-
-            <button class="primary-button" type="submit">
-              Enter workspace
-              <span>→</span>
+            /></label>
+            <label
+              >Password<input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                minlength="6"
+                required
+            /></label>
+            <button class="button button-primary" type="submit">
+              Enter workspace <i data-lucide="arrow-up-right"></i>
             </button>
           </form>
-
-          <p class="form-note">Demo: demo@integratehub.dev / demo1234</p>
-
-          <div class="or">
-            <span></span>
-            or
-            <span></span>
+          <div class="auth-divider">
+            <span></span><small>or</small><span></span>
           </div>
-
-          <button id="show-register" class="secondary-button" type="button">
+          <button
+            id="show-register"
+            class="button button-secondary"
+            type="button"
+          >
             Create a new workspace
           </button>
-
-          <form id="register-form" class="hidden">
-            <label>
-              Your name
-              <input id="register-name" required />
-            </label>
-
-            <label>
-              Work email
-              <input id="register-email" type="email" required />
-            </label>
-
-            <label>
-              Password
-              <input
+          <form id="register-form" class="auth-form hidden">
+            <label
+              >Your name<input
+                id="register-name"
+                placeholder="Alex Morgan"
+                required
+            /></label>
+            <label
+              >Work email<input
+                id="register-email"
+                type="email"
+                placeholder="you@company.com"
+                required
+            /></label>
+            <label
+              >Password<input
                 id="register-password"
                 type="password"
                 minlength="6"
+                placeholder="At least 6 characters"
                 required
-              />
-            </label>
-
-            <button class="primary-button" type="submit">
-              Create workspace
-              <span>→</span>
+            /></label>
+            <button class="button button-primary" type="submit">
+              Create workspace <i data-lucide="arrow-up-right"></i>
             </button>
           </form>
+          <p class="auth-note">
+            By continuing, you agree to the workspace terms and privacy policy.
+          </p>
         </div>
       </section>
     </main>
 
-    <!-- =====================================================
-       APPLICATION
-       ===================================================== -->
-
-    <main id="app-view" class="app-shell hidden">
-      <!-- ===================================================
-         SIDEBAR
-         =================================================== -->
-
-      <aside class="sidebar">
-        <div class="brand-mark">
-          <span class="brand-dot"></span>
-          IntegrateHub
-        </div>
-
-        <div class="workspace-switcher">
-          <span class="workspace-avatar"> A </span>
-
-          <div>
-            <strong> Acme workspace </strong>
-
-            <small> Professional plan </small>
+    <main id="app-view" class="app-view hidden">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-top">
+          <div class="brand">
+            <span class="brand-glyph"><i></i><i></i><i></i></span
+            ><span>IntegrateHub</span>
           </div>
-
-          <span class="chevron"> ˅ </span>
+          <button
+            id="workspace-switcher"
+            class="workspace-switcher"
+            type="button"
+          >
+            <span class="workspace-avatar">A</span
+            ><span
+              ><strong>Acme workspace</strong
+              ><small>Professional plan</small></span
+            ><i data-lucide="chevrons-up-down"></i>
+          </button>
+          <nav class="nav-groups" aria-label="Workspace navigation">
+            <p class="nav-label">WORKSPACE</p>
+            <button class="nav-item active" data-view="overview">
+              <i data-lucide="sparkles"></i>Overview
+            </button>
+            <button class="nav-item" data-view="connectors">
+              <i data-lucide="plug-zap"></i>Connectors<span
+                class="nav-badge"
+                id="connector-count"
+                >0</span
+              >
+            </button>
+            <button class="nav-item" data-view="records">
+              <i data-lucide="database"></i>Records
+            </button>
+            <button class="nav-item" data-view="documents">
+              <i data-lucide="files"></i>Documents
+            </button>
+            <p class="nav-label nav-label-spaced">CONNECTIONS</p>
+            <button class="nav-item" data-view="integrations">
+              <i data-lucide="blocks"></i>App connections
+            </button>
+          </nav>
         </div>
-
-        <nav>
-          <button class="nav-item active" data-view="overview">
-            <span class="nav-icon">+</span>
-            Overview
-          </button>
-
-          <button class="nav-item" data-view="connectors">
-            <span class="nav-icon">*</span>
-            Connectors
-            <span class="nav-count">3</span>
-          </button>
-
-          <button class="nav-item" data-view="records">
-            <span class="nav-icon">#</span>
-            Records
-          </button>
-
-          <button class="nav-item" data-view="documents">
-            <span class="nav-icon">[]</span>
-            Documents
-          </button>
-
-          <button class="nav-item" data-view="integrations">
-            <span class="nav-icon">○</span>
-            App connections
-          </button>
-        </nav>
-
         <div class="sidebar-bottom">
+          <div class="upgrade-card">
+            <span class="upgrade-icon"><i data-lucide="zap"></i></span
+            ><strong>Need more capacity?</strong>
+            <p>Upgrade your workspace when you are ready.</p>
+            <button type="button" data-view-target="settings">
+              View plans <i data-lucide="arrow-up-right"></i>
+            </button>
+          </div>
           <button class="nav-item" data-view="settings">
-            <span class="nav-icon">@</span>
-            Settings
+            <i data-lucide="settings-2"></i>Settings
           </button>
-
           <button id="logout" class="nav-item">
-            <span class="nav-icon">←</span>
-            Sign out
+            <i data-lucide="log-out"></i>Sign out
           </button>
-
-          <div class="user-chip">
-            <span class="user-avatar"> AM </span>
-
-            <div>
-              <strong id="user-name"> Alex Morgan </strong>
-
-              <small> Admin </small>
-            </div>
-
-            <span class="more"> ... </span>
+          <div class="user-row">
+            <span class="user-avatar" id="user-avatar">AM</span
+            ><span
+              ><strong id="user-name">Alex Morgan</strong
+              ><small>Admin</small></span
+            ><button type="button" title="Account menu">
+              <i data-lucide="more-horizontal"></i>
+            </button>
           </div>
         </div>
       </aside>
 
-      <!-- ===================================================
-         MAIN CONTENT
-         =================================================== -->
-
-      <section class="content">
-        <!-- TOPBAR -->
-
+      <section class="workspace">
         <header class="topbar">
-          <div>
-            <span class="mobile-menu"> = </span>
-
-            <span class="breadcrumb"> Workspace / </span>
-
-            <strong id="page-title"> Overview </strong>
+          <div class="topbar-left">
+            <button
+              id="mobile-menu"
+              class="icon-button mobile-menu"
+              type="button"
+              aria-label="Open navigation"
+            >
+              <i data-lucide="menu"></i></button
+            ><span class="breadcrumb">Workspace /</span
+            ><strong id="page-title">Overview</strong>
           </div>
-
-          <div class="top-actions">
-            <span class="status-indicator">
-              <i></i>
-              All systems operational
-            </span>
-
-            <button class="icon-button" title="Notifications">!</button>
-
-            <button class="avatar-button">AM</button>
+          <div class="topbar-actions">
+            <label class="global-search"
+              ><i data-lucide="search"></i
+              ><input
+                id="global-search"
+                placeholder="Search workspace" /></label
+            ><span class="system-status"><b></b>All systems operational</span
+            ><button class="icon-button" title="Notifications">
+              <i data-lucide="bell"></i></button
+            ><span class="top-avatar" id="top-avatar">AM</span>
           </div>
         </header>
 
-        <!-- =================================================
-           OVERVIEW
-           ================================================= -->
-
-        <div id="view-overview" class="view">
-          <div class="view-heading">
-            <div>
-              <p class="eyebrow">MONDAY, SEPTEMBER 21, 2026</p>
-
-              <h1>
-                Good morning, Alex
-                <span class="wave">.</span>
-              </h1>
-
-              <p class="muted">
-                Here is what is moving through your workspace today.
-              </p>
-            </div>
-
-            <button class="primary-button compact" id="quick-upload">
-              + Import data
-            </button>
-          </div>
-
-          <!-- METRICS -->
-
-          <div class="metric-grid">
-            <div class="metric-card">
-              <div class="metric-label">
-                TOTAL RECORDS
-                <span class="metric-icon"> # </span>
-              </div>
-
-              <strong id="metric-records"> 0 </strong>
-
-              <span class="metric-trend">
-                +12.4%
-                <em>vs last month</em>
-              </span>
-            </div>
-
-            <div class="metric-card">
-              <div class="metric-label">
-                ACTIVE CONNECTORS
-                <span class="metric-icon"> * </span>
-              </div>
-
-              <strong id="metric-connectors"> 0 </strong>
-
-              <span class="metric-trend">
-                No change
-                <em>this week</em>
-              </span>
-            </div>
-
-            <div class="metric-card">
-              <div class="metric-label">
-                DUPLICATES FLAGGED
-                <span class="metric-icon"> ! </span>
-              </div>
-
-              <strong id="metric-duplicates"> 0 </strong>
-
-              <span class="metric-trend">
-                Needs review
-                <em>in your queue</em>
-              </span>
-            </div>
-
-            <div class="metric-card">
-              <div class="metric-label">
-                DOCUMENTS
-                <span class="metric-icon"> [] </span>
-              </div>
-
-              <strong id="metric-documents"> 0 </strong>
-
-              <span class="metric-trend">
-                Ready
-                <em>for your team</em>
-              </span>
-            </div>
-          </div>
-
-          <!-- CONNECTOR + ACTIVITY -->
-
-          <div class="section-grid">
-            <section class="panel health-panel">
-              <div class="panel-header">
-                <div>
-                  <h2>Connector health</h2>
-
-                  <p>Real-time status across your data sources.</p>
-                </div>
-
-                <button class="text-button" data-view-target="connectors">
-                  View all →
-                </button>
-              </div>
-
-              <div id="connector-health" class="health-list"></div>
-            </section>
-
-            <section class="panel activity-panel">
-              <div class="panel-header">
-                <div>
-                  <h2>Recent activity</h2>
-
-                  <p>Latest events from your workspace.</p>
-                </div>
-
-                <button class="icon-button small">...</button>
-              </div>
-
-              <div id="activity-list" class="activity-list"></div>
-            </section>
-          </div>
-
-          <!-- AI ASSISTANT -->
-
-          <section class="assistant-banner">
-            <div class="assistant-orbit">AI</div>
-
-            <div>
-              <span class="eyebrow"> INTEGRATION ASSISTANT </span>
-
-              <h2>Need a hand with your next source?</h2>
-
-              <p>
-                Drop in a sample and Gemini will suggest a field mapping for you
-                to review.
-              </p>
-            </div>
-
-            <button class="secondary-button" data-view-target="connectors">
-              Open assistant →
-            </button>
-          </section>
-        </div>
-
-        <!-- =================================================
-           CONNECTORS
-           ================================================= -->
-
-        <div id="view-connectors" class="view hidden">
-          <div class="view-heading">
-            <div>
-              <p class="eyebrow">DATA SOURCES</p>
-
-              <h1>Connectors</h1>
-
-              <p class="muted">Every source, one normalized pipeline.</p>
-            </div>
-
-            <button class="primary-button compact" id="new-connector">
-              + New connector
-            </button>
-          </div>
-
-          <section class="panel mapping-panel">
-            <div class="mapping-copy">
-              <span class="assistant-orbit small-orbit"> AI </span>
-
+        <div class="workspace-content">
+          <section id="view-overview" class="view">
+            <div class="view-heading hero-heading">
               <div>
-                <span class="eyebrow"> GEMINI MAPPING ASSISTANT </span>
+                <p class="kicker">WORKSPACE / <span id="today-label"></span></p>
+                <h1>Hello, <span id="greeting-name">Alex</span><em>.</em></h1>
+                <p class="view-subtitle">
+                  Here is what is happening in your workspace.
+                </p>
+              </div>
+              <button id="quick-upload" class="button button-primary">
+                <i data-lucide="upload"></i>Import data
+              </button>
+            </div>
+            <div class="studio-prompt">
+              <div class="prompt-orbit">
+                <span></span><span></span><span></span><span></span>
+              </div>
+              <div class="prompt-body">
+                <span>How can we help?</span
+                ><small>Ask about your data or start a new connection.</small>
+              </div>
+              <button
+                id="prompt-action"
+                class="icon-button prompt-mic"
+                title="Ask IntegrateHub"
+              >
+                <i data-lucide="mic"></i></button
+              ><button id="prompt-lucky" class="lucky-button">
+                <i data-lucide="sparkles"></i>I'm feeling lucky
+              </button>
+            </div>
+            <div class="quick-chips">
+              <button data-view-target="connectors">
+                <i data-lucide="plug"></i>Build a connector</button
+              ><button data-view-target="documents">
+                <i data-lucide="hard-drive-upload"></i>Import a file</button
+              ><button data-view-target="integrations">
+                <i data-lucide="blocks"></i>Connect an app</button
+              ><button data-view-target="records">
+                <i data-lucide="database"></i>Review records
+              </button>
+            </div>
+            <div class="section-intro">
+              <div>
+                <p class="kicker">OVERVIEW</p>
+                <h2>Your workspace at a glance.</h2>
+              </div>
+              <button class="text-button" data-view-target="records">
+                View data <i data-lucide="arrow-up-right"></i>
+              </button>
+            </div>
+            <div class="metric-grid">
+              <article class="metric-card metric-blue">
+                <span class="metric-top"
+                  ><span>Total records</span
+                  ><i data-lucide="database"></i></span
+                ><strong id="metric-records">0</strong
+                ><small><b>+12.4%</b> vs last month</small>
+              </article>
+              <article class="metric-card metric-amber">
+                <span class="metric-top"
+                  ><span>Active connectors</span
+                  ><i data-lucide="plug-zap"></i></span
+                ><strong id="metric-connectors">0</strong
+                ><small><b>Healthy</b> across your sources</small>
+              </article>
+              <article class="metric-card metric-rose">
+                <span class="metric-top"
+                  ><span>Duplicates flagged</span
+                  ><i data-lucide="copy"></i></span
+                ><strong id="metric-duplicates">0</strong
+                ><small><b>Needs review</b> in your queue</small>
+              </article>
+              <article class="metric-card metric-teal">
+                <span class="metric-top"
+                  ><span>Documents</span><i data-lucide="files"></i></span
+                ><strong id="metric-documents">0</strong
+                ><small><b>Ready</b> for your team</small>
+              </article>
+            </div>
+            <div class="content-grid">
+              <section class="panel">
+                <div class="panel-heading">
+                  <div>
+                    <p class="kicker">DATA SOURCES</p>
+                    <h2>Connector health</h2>
+                  </div>
+                  <button class="text-button" data-view-target="connectors">
+                    View all <i data-lucide="arrow-up-right"></i>
+                  </button>
+                </div>
+                <div id="connector-health" class="health-list"></div>
+              </section>
+              <section class="panel">
+                <div class="panel-heading">
+                  <div>
+                    <p class="kicker">LIVE FEED</p>
+                    <h2>Recent activity</h2>
+                  </div>
+                  <button
+                    class="icon-button"
+                    title="Refresh activity"
+                    id="refresh-dashboard"
+                  >
+                    <i data-lucide="refresh-cw"></i>
+                  </button>
+                </div>
+                <div id="activity-list" class="activity-list"></div>
+              </section>
+            </div>
+          </section>
 
-                <h2>Turn a sample into a clean schema</h2>
+          <section id="view-connectors" class="view hidden">
+            <div class="view-heading">
+              <div>
+                <p class="kicker">DATA SOURCES</p>
+                <h1>Connectors</h1>
+                <p class="view-subtitle">
+                  Every source, one normalized pipeline.
+                </p>
+              </div>
+              <button class="button button-primary" id="new-connector">
+                <i data-lucide="plus"></i>New connector
+              </button>
+            </div>
+            <section class="mapping-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="kicker">AI MAPPING ASSISTANT</p>
+                  <h2>Turn a sample into a clean schema.</h2>
+                  <p>
+                    Paste source fields or a JSON payload and get a reviewable
+                    mapping.
+                  </p>
+                </div>
+                <span class="mapping-spark"
+                  ><i data-lucide="sparkles"></i
+                ></span>
+              </div>
+              <textarea
+                id="mapping-sample"
+                placeholder='"firstName,email,companyName"'
+              ></textarea>
+              <div class="mapping-actions">
+                <button id="suggest-mapping" class="button button-primary">
+                  Suggest mapping <i data-lucide="arrow-up-right"></i></button
+                ><small id="mapping-provider"></small>
+              </div>
+              <div id="mapping-result" class="mapping-result hidden"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="kicker">YOUR SOURCES</p>
+                  <h2>Connector inventory</h2>
+                </div>
+              </div>
+              <div id="connectors-table" class="data-table"></div>
+            </section>
+          </section>
 
-                <p>
-                  Paste a header row or JSON payload. Gemini suggests the
-                  mapping, confidence, and fields that need your eye.
+          <section id="view-records" class="view hidden">
+            <div class="view-heading">
+              <div>
+                <p class="kicker">NORMALIZED DATA</p>
+                <h1>Records</h1>
+                <p class="view-subtitle">
+                  Review the clean data layer powering your workflows.
+                </p>
+              </div>
+              <button class="button button-secondary" id="records-filter">
+                <i data-lucide="list-filter"></i>All records
+              </button>
+            </div>
+            <section class="panel">
+              <div class="table-toolbar">
+                <label class="table-search"
+                  ><i data-lucide="search"></i
+                  ><input
+                    id="record-search"
+                    placeholder="Search by email, company, or source" /></label
+                ><span id="records-summary">Latest normalized records</span>
+              </div>
+              <div id="records-table" class="data-table"></div>
+            </section>
+          </section>
+
+          <section id="view-documents" class="view hidden">
+            <div class="view-heading">
+              <div>
+                <p class="kicker">KNOWLEDGE LAYER</p>
+                <h1>Documents</h1>
+                <p class="view-subtitle">
+                  Keep specs, payload examples, and client context beside the
+                  data.
+                </p>
+              </div>
+              <button class="button button-primary" id="upload-document">
+                <i data-lucide="upload"></i>Upload document
+              </button>
+            </div>
+            <section class="dropzone panel">
+              <div class="dropzone-icon"><i data-lucide="file-up"></i></div>
+              <h2>Drop a file into your workspace.</h2>
+              <p>PDF, CSV, JSON, and text files up to 10 MB.</p>
+              <input id="document-input" type="file" hidden /><button
+                class="button button-secondary"
+                id="browse-documents"
+              >
+                Choose a file
+              </button>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="kicker">LIBRARY</p>
+                  <h2>Your documents</h2>
+                </div>
+              </div>
+              <div id="documents-list" class="data-table"></div>
+            </section>
+          </section>
+
+          <section id="view-integrations" class="view hidden">
+            <div class="view-heading">
+              <div>
+                <p class="kicker">EXTEND THE WORKSPACE</p>
+                <h1>App connections</h1>
+                <p class="view-subtitle">
+                  Send clean records where your team already works.
                 </p>
               </div>
             </div>
-
-            <textarea
-              id="mapping-sample"
-              placeholder='Paste CSV headers or JSON, e.g. "firstName,email,companyName"'
-            ></textarea>
-
-            <div class="mapping-actions">
-              <button id="suggest-mapping" class="primary-button compact">
-                Suggest mapping →
-              </button>
-
-              <span id="mapping-provider" class="muted"></span>
-            </div>
-
-            <div id="mapping-result" class="mapping-result hidden"></div>
+            <div id="integrations-grid" class="integration-grid"></div>
           </section>
 
-          <section class="panel">
-            <div class="panel-header">
+          <section id="view-settings" class="view hidden">
+            <div class="view-heading">
               <div>
-                <h2>Your connectors</h2>
-
-                <p>Health and throughput at a glance.</p>
+                <p class="kicker">WORKSPACE ADMIN</p>
+                <h1>Settings</h1>
+                <p class="view-subtitle">
+                  Manage your workspace preferences and API access.
+                </p>
               </div>
             </div>
-
-            <div id="connectors-table" class="connector-table"></div>
-          </section>
-        </div>
-
-        <!-- =================================================
-           RECORDS
-           ================================================= -->
-
-        <div id="view-records" class="view hidden">
-          <div class="view-heading">
-            <div>
-              <p class="eyebrow">NORMALIZED DATA</p>
-
-              <h1>Records</h1>
-
-              <p class="muted">
-                Review the clean data layer powering your workflows.
-              </p>
-            </div>
-
-            <button class="secondary-button compact" id="records-filter">
-              All records ˅
-            </button>
-          </div>
-
-          <section class="panel table-panel">
-            <div class="table-toolbar">
-              <div class="search-box">
-                /
-
-                <input
-                  id="record-search"
-                  placeholder="Search by email, company, or source"
-                />
+            <section class="panel settings-panel">
+              <div class="settings-intro">
+                <span class="workspace-avatar large">A</span>
+                <div>
+                  <p class="kicker">WORKSPACE DETAILS</p>
+                  <h2>Acme workspace</h2>
+                  <p>Professional plan · 3 seats · Local mode</p>
+                </div>
               </div>
-
-              <span class="muted">
-                Showing your latest normalized records
-              </span>
-            </div>
-
-            <div id="records-table" class="records-table"></div>
-          </section>
-        </div>
-
-        <!-- =================================================
-           DOCUMENTS
-           ================================================= -->
-
-        <div id="view-documents" class="view hidden">
-          <div class="view-heading">
-            <div>
-              <p class="eyebrow">KNOWLEDGE LAYER</p>
-
-              <h1>Documents</h1>
-
-              <p class="muted">
-                Keep specs, payload examples, and client context beside the
-                data.
-              </p>
-            </div>
-
-            <button class="primary-button compact" id="upload-document">
-              + Upload document
-            </button>
-          </div>
-
-          <section class="panel drop-panel">
-            <div class="drop-icon">[]</div>
-
-            <h2>Drop files here or browse</h2>
-
-            <p>PDF, CSV, JSON, and text files up to 10 MB.</p>
-
-            <input id="document-input" type="file" hidden />
-
-            <button class="secondary-button compact" id="browse-documents">
-              Choose a file
-            </button>
-          </section>
-
-          <section class="panel">
-            <div class="panel-header">
-              <div>
-                <h2>Your library</h2>
-
-                <p>Shared context for every integration.</p>
+              <div class="setting-row">
+                <span>API access</span
+                ><b class="status-pill healthy">Enabled</b>
               </div>
-            </div>
-
-            <div id="documents-list" class="documents-list"></div>
-          </section>
-        </div>
-
-        <!-- =================================================
-           APP CONNECTIONS
-           ================================================= -->
-
-        <div id="view-integrations" class="view hidden">
-          <div class="view-heading">
-            <div>
-              <p class="eyebrow">EXTEND THE WORKSPACE</p>
-
-              <h1>App connections</h1>
-
-              <p class="muted">
-                Send clean records where your team already works.
-              </p>
-            </div>
-          </div>
-
-          <div id="integrations-grid" class="integration-grid"></div>
-        </div>
-
-        <!-- =================================================
-           SETTINGS
-           ================================================= -->
-
-        <div id="view-settings" class="view hidden">
-          <div class="view-heading">
-            <div>
-              <p class="eyebrow">WORKSPACE ADMIN</p>
-
-              <h1>Settings</h1>
-
-              <p class="muted">
-                Manage your workspace preferences and API access.
-              </p>
-            </div>
-          </div>
-
-          <section class="panel settings-panel">
-            <div>
-              <span class="eyebrow"> WORKSPACE DETAILS </span>
-
-              <h2>Acme workspace</h2>
-
-              <p class="muted">
-                Professional plan · 3 seats · SQLite local mode
-              </p>
-            </div>
-
-            <div class="setting-row">
-              <span> API access </span>
-
-              <span class="pill healthy"> Enabled </span>
-            </div>
-
-            <div class="setting-row">
-              <span> AI provider </span>
-
-              <span class="pill"> Gemini + local fallback </span>
-            </div>
-
-            <div class="setting-row">
-              <span> Webhook signing </span>
-
-              <span class="pill healthy"> HMAC-SHA256 </span>
-            </div>
+              <div class="setting-row">
+                <span>AI provider</span
+                ><b class="status-pill">Gemini + local fallback</b>
+              </div>
+              <div class="setting-row">
+                <span>Webhook signing</span
+                ><b class="status-pill healthy">HMAC-SHA256</b>
+              </div>
+            </section>
           </section>
         </div>
       </section>
     </main>
 
-    <!-- Application JavaScript -->
-    <script src="/app.js?v=20260922theme"></script>
+    <div
+      id="connector-modal"
+      class="modal hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+    >
+      <div class="modal-card">
+        <div class="modal-heading">
+          <div>
+            <p class="kicker">NEW SOURCE</p>
+            <h2 id="modal-title">Configure a connector</h2>
+          </div>
+          <button id="close-modal" class="icon-button">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <form id="connector-form">
+          <label
+            >Connector name<input
+              id="connector-name"
+              placeholder="Client CRM"
+              required /></label
+          ><label
+            >Source type<select id="connector-kind">
+              <option value="rest">REST API</option>
+              <option value="webhook">Webhook</option>
+              <option value="csv">CSV upload</option>
+            </select></label
+          ><label id="endpoint-field"
+            >Endpoint URL<input
+              id="connector-endpoint"
+              type="url"
+              placeholder="https://api.example.com/contacts" /></label
+          ><label id="secret-field"
+            >Bearer token or signing secret<input
+              id="connector-secret"
+              type="password"
+              placeholder="Optional for REST"
+          /></label>
+          <div class="modal-actions">
+            <button
+              type="button"
+              id="cancel-modal"
+              class="button button-secondary"
+            >
+              Cancel</button
+            ><button type="submit" class="button button-primary">
+              Create connector <i data-lucide="arrow-up-right"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <script src="/app.js?v=20260923studio3"></script>
   </body>
 </html>
