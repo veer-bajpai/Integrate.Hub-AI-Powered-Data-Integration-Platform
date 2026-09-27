@@ -3,16 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#171717" />
+    <meta id="theme-color-meta" name="theme-color" content="#f5f6fa" />
     <title>IntegrateHub | Your AI data workspace</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <script>
+      document.documentElement.dataset.theme =
+        localStorage.getItem("integratehub_theme") === "dark"
+          ? "dark"
+          : "light";
+    </script>
     <script src="https://unpkg.com/lucide@0.468.0"></script>
-    <link rel="stylesheet" href="/styles.css?v=20260923studio3" />
+    <link rel="stylesheet" href="/styles.css?v=20260927premiumdark2" />
   </head>
   <body>
     <div id="toast" class="toast" role="status"></div>
@@ -20,7 +20,8 @@
     <main id="auth-view" class="auth-view">
       <section class="auth-visual">
         <div class="brand">
-          <span class="brand-glyph"><i></i><i></i><i></i></span
+          <span class="brand-glyph" aria-hidden="true"
+            ><i></i><i></i><i></i><i></i></span
           ><span>IntegrateHub</span>
         </div>
         <div class="visual-copy">
@@ -40,74 +41,129 @@
         </div>
       </section>
       <section class="auth-panel">
+        <button
+          id="auth-theme-toggle"
+          class="icon-button theme-toggle auth-theme-toggle"
+          type="button"
+          aria-label="Switch to dark theme"
+          title="Switch to dark theme"
+          aria-pressed="false"
+        >
+          <i data-lucide="moon"></i>
+        </button>
         <div class="auth-card">
           <div class="mobile-brand">
             <div class="brand">
-              <span class="brand-glyph"><i></i><i></i><i></i></span
+              <span class="brand-glyph" aria-hidden="true"
+                ><i></i><i></i><i></i><i></i></span
               ><span>IntegrateHub</span>
             </div>
           </div>
-          <p class="kicker">SIGN IN</p>
-          <h2>Welcome back.</h2>
-          <p class="auth-subtitle">
+          <p class="kicker" id="auth-kicker">SIGN IN</p>
+          <h2 id="auth-title">Welcome back.</h2>
+          <p class="auth-subtitle" id="auth-subtitle">
             Sign in to continue, or create a new workspace.
           </p>
-          <form id="login-form" class="auth-form">
+          <form id="login-form" class="auth-form" novalidate>
             <label
               >Email<input
                 id="email"
                 type="email"
                 placeholder="you@company.com"
-                required
-            /></label>
+                aria-describedby="email-error"
+                required /><small
+                class="field-error"
+                id="email-error"
+                aria-live="polite"
+              ></small
+            ></label>
             <label
               >Password<input
                 id="password"
                 type="password"
                 placeholder="••••••••"
                 minlength="6"
-                required
-            /></label>
+                aria-describedby="password-error"
+                required /><small
+                class="field-error"
+                id="password-error"
+                aria-live="polite"
+              ></small
+            ></label>
             <button class="button button-primary" type="submit">
               Enter workspace <i data-lucide="arrow-up-right"></i>
             </button>
           </form>
-          <div class="auth-divider">
-            <span></span><small>or</small><span></span>
-          </div>
-          <button
-            id="show-register"
-            class="button button-secondary"
-            type="button"
-          >
-            Create a new workspace
-          </button>
-          <form id="register-form" class="auth-form hidden">
+          <form id="register-form" class="auth-form hidden" novalidate>
             <label
               >Your name<input
                 id="register-name"
                 placeholder="Alex Morgan"
-                required
-            /></label>
+                minlength="2"
+                maxlength="80"
+                aria-describedby="register-name-error"
+                required /><small
+                class="field-error"
+                id="register-name-error"
+                aria-live="polite"
+              ></small
+            ></label>
             <label
               >Work email<input
                 id="register-email"
                 type="email"
                 placeholder="you@company.com"
-                required
-            /></label>
+                aria-describedby="register-email-error"
+                required /><small
+                class="field-error"
+                id="register-email-error"
+                aria-live="polite"
+              ></small
+            ></label>
             <label
               >Password<input
                 id="register-password"
                 type="password"
                 minlength="6"
                 placeholder="At least 6 characters"
-                required
-            /></label>
+                aria-describedby="register-password-hint register-password-error"
+                required /><small class="field-hint" id="register-password-hint"
+                >6 characters minimum. Longer, mixed passwords are
+                stronger.</small
+              ><small
+                class="field-error"
+                id="register-password-error"
+                aria-live="polite"
+              ></small
+            ></label>
             <button class="button button-primary" type="submit">
               Create workspace <i data-lucide="arrow-up-right"></i>
             </button>
           </form>
+          <div class="auth-divider auth-google-divider">
+            <span></span><small>or continue with</small><span></span>
+          </div>
+          <button id="google-auth" class="button button-google" type="button">
+            <img
+              class="google-mark"
+              src="/assets/logos/google.svg?v=brand-g"
+              alt=""
+            />Continue with Google
+          </button>
+          <button
+            id="show-register"
+            class="button button-secondary auth-mode-button"
+            type="button"
+          >
+            Create a new workspace
+          </button>
+          <button
+            id="show-login"
+            class="button button-secondary auth-mode-button hidden"
+            type="button"
+          >
+            Back to sign in
+          </button>
           <p class="auth-note">
             By continuing, you agree to the workspace terms and privacy policy.
           </p>
@@ -119,20 +175,20 @@
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-top">
           <div class="brand">
-            <span class="brand-glyph"><i></i><i></i><i></i></span
+            <span class="brand-glyph" aria-hidden="true"
+              ><i></i><i></i><i></i><i></i></span
             ><span>IntegrateHub</span>
           </div>
-          <button
-            id="workspace-switcher"
-            class="workspace-switcher"
-            type="button"
-          >
-            <span class="workspace-avatar">A</span
-            ><span
-              ><strong>Acme workspace</strong
-              ><small>Professional plan</small></span
-            ><i data-lucide="chevrons-up-down"></i>
-          </button>
+          <label class="workspace-switcher">
+            <span class="workspace-avatar" id="workspace-avatar">A</span>
+            <span class="workspace-switcher-copy">
+              <select id="workspace-switcher" aria-label="Switch workspace">
+                <option value="">Loading workspaces...</option>
+              </select>
+              <small id="workspace-role">Workspace</small>
+            </span>
+            <i data-lucide="chevrons-up-down"></i>
+          </label>
           <nav class="nav-groups" aria-label="Workspace navigation">
             <p class="nav-label">WORKSPACE</p>
             <button class="nav-item active" data-view="overview">
@@ -155,10 +211,29 @@
             <button class="nav-item" data-view="integrations">
               <i data-lucide="blocks"></i>App connections
             </button>
+            <p class="nav-label nav-label-spaced">ADMINISTRATION</p>
+            <button class="nav-item" data-view="team">
+              <i data-lucide="users-round"></i>Team &amp; Roles
+            </button>
+            <button class="nav-item" data-view="audit">
+              <i data-lucide="scroll-text"></i>Audit Log
+            </button>
+            <button class="nav-item" data-view="automation">
+              <i data-lucide="workflow"></i>AI &amp; Automation
+            </button>
           </nav>
         </div>
         <div class="sidebar-bottom">
-          <div class="upgrade-card">
+          <div class="upgrade-card" id="upgrade-card">
+            <button
+              id="dismiss-upgrade"
+              class="upgrade-dismiss"
+              type="button"
+              aria-label="Dismiss capacity message"
+              title="Dismiss"
+            >
+              <i data-lucide="x"></i>
+            </button>
             <span class="upgrade-icon"><i data-lucide="zap"></i></span
             ><strong>Need more capacity?</strong>
             <p>Upgrade your workspace when you are ready.</p>
@@ -176,7 +251,7 @@
             <span class="user-avatar" id="user-avatar">AM</span
             ><span
               ><strong id="user-name">Alex Morgan</strong
-              ><small>Admin</small></span
+              ><small id="user-role">Owner</small></span
             ><button type="button" title="Account menu">
               <i data-lucide="more-horizontal"></i>
             </button>
@@ -198,12 +273,31 @@
             ><strong id="page-title">Overview</strong>
           </div>
           <div class="topbar-actions">
-            <label class="global-search"
-              ><i data-lucide="search"></i
-              ><input
-                id="global-search"
-                placeholder="Search workspace" /></label
-            ><span class="system-status"><b></b>All systems operational</span
+            <div class="global-search-wrap">
+              <label class="global-search"
+                ><i data-lucide="search"></i
+                ><input
+                  id="global-search"
+                  placeholder="Search workspace"
+                  autocomplete="off"
+              /></label>
+              <div
+                id="global-search-results"
+                class="global-search-results hidden"
+                role="listbox"
+                aria-label="Search results"
+              ></div>
+            </div>
+            <span class="system-status"><b></b>All systems operational</span
+            ><button
+              id="theme-toggle"
+              class="icon-button theme-toggle"
+              type="button"
+              aria-label="Switch to dark theme"
+              title="Switch to dark theme"
+              aria-pressed="false"
+            >
+              <i data-lucide="moon"></i></button
             ><button class="icon-button" title="Notifications">
               <i data-lucide="bell"></i></button
             ><span class="top-avatar" id="top-avatar">AM</span>
@@ -370,6 +464,21 @@
               </div>
               <div id="connectors-table" class="data-table"></div>
             </section>
+            <section class="panel connector-destinations-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="kicker">APP DESTINATIONS</p>
+                  <h2>Send clean data where it belongs.</h2>
+                </div>
+                <button class="text-button" data-view-target="integrations">
+                  Browse connections <i data-lucide="arrow-up-right"></i>
+                </button>
+              </div>
+              <div
+                id="connector-destinations"
+                class="connector-destinations"
+              ></div>
+            </section>
           </section>
 
           <section id="view-records" class="view hidden">
@@ -386,15 +495,111 @@
               </button>
             </div>
             <section class="panel">
-              <div class="table-toolbar">
-                <label class="table-search"
-                  ><i data-lucide="search"></i
-                  ><input
-                    id="record-search"
-                    placeholder="Search by email, company, or source" /></label
-                ><span id="records-summary">Latest normalized records</span>
+              <div class="records-toolbar">
+                <div class="table-toolbar">
+                  <label class="table-search"
+                    ><i data-lucide="search"></i
+                    ><input
+                      id="record-search"
+                      placeholder="Search by email, company, or source" /></label
+                  ><span id="records-summary">Latest normalized records</span>
+                </div>
+                <div class="record-filters">
+                  <select
+                    id="record-source-filter"
+                    aria-label="Filter by source"
+                  >
+                    <option value="">All sources</option>
+                  </select>
+                  <select
+                    id="record-status-filter"
+                    aria-label="Filter by status"
+                  >
+                    <option value="">All statuses</option>
+                  </select>
+                  <label
+                    >From<input
+                      id="record-date-from"
+                      type="date"
+                      aria-label="Created from"
+                  /></label>
+                  <label
+                    >To<input
+                      id="record-date-to"
+                      type="date"
+                      aria-label="Created to"
+                  /></label>
+                </div>
+                <div class="saved-view-controls">
+                  <select id="saved-view-select" aria-label="Saved views">
+                    <option value="">Saved views</option>
+                  </select>
+                  <input
+                    id="saved-view-name"
+                    maxlength="80"
+                    placeholder="Name this view"
+                    aria-label="Saved view name"
+                  />
+                  <button
+                    id="save-record-view"
+                    class="button button-secondary"
+                    type="button"
+                  >
+                    <i data-lucide="bookmark-plus"></i>Save view
+                  </button>
+                  <button
+                    id="delete-record-view"
+                    class="icon-button"
+                    type="button"
+                    title="Delete saved view"
+                    aria-label="Delete saved view"
+                    disabled
+                  >
+                    <i data-lucide="trash-2"></i>
+                  </button>
+                </div>
               </div>
               <div id="records-table" class="data-table"></div>
+            </section>
+            <section
+              id="record-detail"
+              class="panel record-detail hidden"
+              aria-live="polite"
+            >
+              <div class="panel-heading">
+                <div>
+                  <p class="kicker">RECORD DETAIL</p>
+                  <h2 id="record-detail-title">Record</h2>
+                  <p id="record-detail-meta" class="record-detail-meta"></p>
+                </div>
+                <button
+                  id="close-record-detail"
+                  class="icon-button"
+                  type="button"
+                  title="Close record details"
+                  aria-label="Close record details"
+                >
+                  <i data-lucide="x"></i>
+                </button>
+              </div>
+              <div id="record-detail-data" class="record-fields"></div>
+              <div class="record-comments-section">
+                <h3>Comments</h3>
+                <div id="record-comments" class="record-comments"></div>
+                <form id="record-comment-form" class="record-comment-form">
+                  <label for="record-comment-input">Add a comment</label>
+                  <textarea
+                    id="record-comment-input"
+                    maxlength="5000"
+                    rows="3"
+                    placeholder="Write a comment. Use @name to mention someone."
+                    required
+                  ></textarea>
+                  <button class="button button-primary" type="submit">
+                    <i data-lucide="send"></i>Post comment
+                  </button>
+                </form>
+              </div>
             </section>
           </section>
 
@@ -447,6 +652,184 @@
             <div id="integrations-grid" class="integration-grid"></div>
           </section>
 
+          <section id="view-team" class="view hidden">
+            <div class="view-heading">
+              <div>
+                <p class="kicker">WORKSPACE ACCESS</p>
+                <h1>Team &amp; Roles</h1>
+                <p class="view-subtitle">
+                  Manage people and their workspace access.
+                </p>
+              </div>
+            </div>
+            <section class="panel workspace-create-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="kicker">MULTI-TENANT WORKSPACES</p>
+                  <h2>Create a workspace</h2>
+                </div>
+              </div>
+              <form id="workspace-form" class="inline-form">
+                <label
+                  >Workspace name<input
+                    id="workspace-name"
+                    minlength="2"
+                    maxlength="100"
+                    placeholder="Northstar Operations"
+                    required
+                /></label>
+                <button class="button button-secondary" type="submit">
+                  <i data-lucide="plus"></i>Create workspace
+                </button>
+              </form>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="kicker">MEMBERS</p>
+                  <h2>People in this workspace</h2>
+                </div>
+              </div>
+              <form id="member-form" class="inline-form admin-control">
+                <label
+                  >Existing account email<input
+                    id="member-email"
+                    type="email"
+                    placeholder="teammate@company.com"
+                    required
+                /></label>
+                <label
+                  >Role<select id="member-role">
+                    <option value="member">Member</option>
+                    <option value="admin">Admin</option>
+                  </select></label
+                >
+                <button class="button button-primary" type="submit">
+                  <i data-lucide="user-plus"></i>Add member
+                </button>
+              </form>
+              <div id="members-list" class="member-list"></div>
+            </section>
+          </section>
+
+          <section id="view-audit" class="view hidden">
+            <div class="view-heading">
+              <div>
+                <p class="kicker">ADMINISTRATION</p>
+                <h1>Audit Log</h1>
+                <p class="view-subtitle">
+                  Role, credential, and replay events for this workspace.
+                </p>
+              </div>
+            </div>
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="kicker">RECENT EVENTS</p>
+                  <h2>Workspace activity</h2>
+                </div>
+                <button
+                  id="refresh-audit"
+                  class="icon-button"
+                  type="button"
+                  title="Refresh audit log"
+                >
+                  <i data-lucide="refresh-cw"></i>
+                </button>
+              </div>
+              <div id="audit-list" class="audit-list"></div>
+            </section>
+          </section>
+
+          <section id="view-automation" class="view hidden">
+            <div class="view-heading">
+              <div>
+                <p class="kicker">AI &amp; AUTOMATION</p>
+                <h1>Controlled rollout</h1>
+                <p class="view-subtitle">
+                  Set deterministic Gemini mapping availability for this
+                  workspace.
+                </p>
+              </div>
+            </div>
+            <section class="panel settings-panel">
+              <form id="ai-settings-form">
+                <label class="setting-toggle" for="ai-gemini-enabled">
+                  <span
+                    ><strong>Gemini mapping kill switch</strong
+                    ><small
+                      >When off, mapping suggestions use the local
+                      fallback.</small
+                    ></span
+                  >
+                  <input id="ai-gemini-enabled" type="checkbox" />
+                </label>
+                <label class="rollout-control" for="ai-rollout-percent">
+                  <span
+                    ><strong>Workspace rollout</strong
+                    ><output id="ai-rollout-value">100%</output></span
+                  >
+                  <input
+                    id="ai-rollout-percent"
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value="100"
+                  />
+                </label>
+                <div class="setting-row">
+                  <span>Stable workspace bucket</span
+                  ><b id="ai-workspace-bucket" class="status-pill">--</b>
+                </div>
+                <div class="setting-row">
+                  <span>Effective state</span
+                  ><b id="ai-effective-state" class="status-pill">Loading</b>
+                </div>
+                <button
+                  class="button button-primary admin-control"
+                  type="submit"
+                >
+                  <i data-lucide="save"></i>Save rollout
+                </button>
+              </form>
+            </section>
+            <section class="panel replay-audit-panel admin-control">
+              <div class="panel-heading">
+                <div>
+                  <p class="kicker">WEBHOOK OPERATIONS</p>
+                  <h2>Record an external replay</h2>
+                  <p>
+                    This records an audit event only. It does not execute the
+                    webhook again.
+                  </p>
+                </div>
+              </div>
+              <form id="replay-audit-form" class="inline-form">
+                <label
+                  >Webhook connector ID<input
+                    id="replay-connector-id"
+                    type="number"
+                    min="1"
+                    required
+                /></label>
+                <label
+                  >Event ID<input id="replay-event-id" maxlength="200" required
+                /></label>
+                <label class="checkbox-label"
+                  ><input
+                    id="replay-idempotent"
+                    type="checkbox"
+                    checked
+                  />Already idempotent</label
+                >
+                <button class="button button-secondary" type="submit">
+                  <i data-lucide="file-plus-2"></i>Record replay
+                </button>
+              </form>
+            </section>
+          </section>
+
           <section id="view-settings" class="view hidden">
             <div class="view-heading">
               <div>
@@ -462,7 +845,7 @@
                 <span class="workspace-avatar large">A</span>
                 <div>
                   <p class="kicker">WORKSPACE DETAILS</p>
-                  <h2>Acme workspace</h2>
+                  <h2 id="settings-workspace-name">Acme workspace</h2>
                   <p>Professional plan · 3 seats · Local mode</p>
                 </div>
               </div>
@@ -538,6 +921,6 @@
         </form>
       </div>
     </div>
-    <script src="/app.js?v=20260923studio3"></script>
+    <script src="/app.js?v=20260927documentdelete"></script>
   </body>
 </html>
