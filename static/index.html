@@ -211,14 +211,14 @@
             <button class="nav-item" data-view="integrations">
               <i data-lucide="blocks"></i>App connections
             </button>
-            <p class="nav-label nav-label-spaced">ADMINISTRATION</p>
-            <button class="nav-item" data-view="team">
+            <p class="nav-label nav-label-spaced">ADVANCED</p>
+            <button class="nav-item nav-item-advanced" data-view="team">
               <i data-lucide="users-round"></i>Team &amp; Roles
             </button>
-            <button class="nav-item" data-view="audit">
+            <button class="nav-item nav-item-advanced" data-view="audit">
               <i data-lucide="scroll-text"></i>Audit Log
             </button>
-            <button class="nav-item" data-view="automation">
+            <button class="nav-item nav-item-advanced" data-view="automation">
               <i data-lucide="workflow"></i>AI &amp; Automation
             </button>
           </nav>
@@ -311,7 +311,7 @@
                 <p class="kicker">WORKSPACE / <span id="today-label"></span></p>
                 <h1>Hello, <span id="greeting-name">Alex</span><em>.</em></h1>
                 <p class="view-subtitle">
-                  Here is what is happening in your workspace.
+                  A calmer way to bring every source into focus.
                 </p>
               </div>
               <button id="quick-upload" class="button button-primary">
@@ -347,6 +347,28 @@
                 <i data-lucide="database"></i>Review records
               </button>
             </div>
+            <section
+              id="dashboard-empty-state"
+              class="dashboard-empty-state hidden"
+            >
+              <span class="empty-state-icon"
+                ><i data-lucide="wand-sparkles"></i
+              ></span>
+              <div>
+                <p class="kicker">YOUR FIRST WORKFLOW</p>
+                <h2>Start with one trusted source.</h2>
+                <p>
+                  Connect a source or import a file and IntegrateHub will turn
+                  it into clean, reviewable records.
+                </p>
+              </div>
+              <button
+                class="button button-primary"
+                data-view-target="connectors"
+              >
+                <i data-lucide="plug-zap"></i>Connect your first source
+              </button>
+            </section>
             <div class="section-intro">
               <div>
                 <p class="kicker">OVERVIEW</p>
@@ -361,29 +383,63 @@
                 <span class="metric-top"
                   ><span>Total records</span
                   ><i data-lucide="database"></i></span
-                ><strong id="metric-records">0</strong
-                ><small><b>+12.4%</b> vs last month</small>
+                ><strong id="metric-records">--</strong
+                ><small id="metric-records-status"
+                  >Connect a source to begin</small
+                >
               </article>
               <article class="metric-card metric-amber">
                 <span class="metric-top"
                   ><span>Active connectors</span
                   ><i data-lucide="plug-zap"></i></span
-                ><strong id="metric-connectors">0</strong
-                ><small><b>Healthy</b> across your sources</small>
+                ><strong id="metric-connectors">--</strong
+                ><small id="metric-connectors-status"
+                  >Your sources will appear here</small
+                >
               </article>
               <article class="metric-card metric-rose">
                 <span class="metric-top"
                   ><span>Duplicates flagged</span
                   ><i data-lucide="copy"></i></span
-                ><strong id="metric-duplicates">0</strong
-                ><small><b>Needs review</b> in your queue</small>
+                ><strong id="metric-duplicates">--</strong
+                ><small id="metric-duplicates-status"
+                  >Nothing needs review yet</small
+                >
               </article>
               <article class="metric-card metric-teal">
                 <span class="metric-top"
                   ><span>Documents</span><i data-lucide="files"></i></span
-                ><strong id="metric-documents">0</strong
-                ><small><b>Ready</b> for your team</small>
+                ><strong id="metric-documents">--</strong
+                ><small id="metric-documents-status"
+                  >Add context for your team</small
+                >
               </article>
+            </div>
+            <div class="dashboard-charts">
+              <section class="panel chart-panel">
+                <div class="panel-heading">
+                  <div>
+                    <p class="kicker">RECORD FLOW</p>
+                    <h2>Records over time</h2>
+                  </div>
+                  <span class="chart-range">Last 14 days</span>
+                </div>
+                <div
+                  id="records-chart"
+                  class="records-chart"
+                  role="img"
+                  aria-label="Records created over the last 14 days"
+                ></div>
+              </section>
+              <section class="panel chart-panel">
+                <div class="panel-heading">
+                  <div>
+                    <p class="kicker">SOURCE MIX</p>
+                    <h2>Records by source</h2>
+                  </div>
+                </div>
+                <div id="source-chart" class="source-chart"></div>
+              </section>
             </div>
             <div class="content-grid">
               <section class="panel">
@@ -754,92 +810,204 @@
             </div>
             <section class="panel settings-panel">
               <form id="ai-settings-form">
-                <label class="setting-toggle" for="ai-gemini-enabled">
-                  <span
-                    ><strong>Gemini mapping kill switch</strong
-                    ><small
-                      >When off, mapping suggestions use the local
-                      fallback.</small
-                    ></span
-                  >
-                  <input id="ai-gemini-enabled" type="checkbox" />
-                </label>
-                <label class="rollout-control" for="ai-rollout-percent">
-                  <span
-                    ><strong>Workspace rollout</strong
-                    ><output id="ai-rollout-value">100%</output></span
-                  >
-                  <input
-                    id="ai-rollout-percent"
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="1"
-                    value="100"
-                  />
-                </label>
-                <div class="setting-row">
-                  <span>Stable workspace bucket</span
-                  ><b id="ai-workspace-bucket" class="status-pill">--</b>
-                </div>
-                <div class="setting-row">
-                  <span>Effective state</span
-                  ><b id="ai-effective-state" class="status-pill">Loading</b>
-                </div>
-                <button
-                  class="button button-primary admin-control"
-                  type="submit"
-                >
-                  <i data-lucide="save"></i>Save rollout
-                </button>
+                <details class="advanced-settings">
+                  <summary>Advanced rollout settings</summary>
+                  <div class="advanced-settings-body">
+                    <label class="setting-toggle" for="ai-gemini-enabled">
+                      <span
+                        ><strong>Gemini mapping availability</strong
+                        ><small
+                          >Turn off AI suggestions to use the local
+                          deterministic fallback.</small
+                        ></span
+                      >
+                      <input id="ai-gemini-enabled" type="checkbox" />
+                    </label>
+                    <label class="rollout-control" for="ai-rollout-percent">
+                      <span
+                        ><strong>Workspace rollout</strong
+                        ><output id="ai-rollout-value">100%</output></span
+                      >
+                      <input
+                        id="ai-rollout-percent"
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value="100"
+                      />
+                    </label>
+                    <div class="setting-row">
+                      <span>Stable workspace bucket</span
+                      ><b id="ai-workspace-bucket" class="status-pill">--</b>
+                    </div>
+                    <div class="setting-row">
+                      <span>Effective state</span
+                      ><b id="ai-effective-state" class="status-pill"
+                        >Loading</b
+                      >
+                    </div>
+                    <button
+                      class="button button-primary admin-control"
+                      type="submit"
+                    >
+                      <i data-lucide="save"></i>Save rollout
+                    </button>
+                  </div>
+                </details>
               </form>
             </section>
-            <section class="panel replay-audit-panel admin-control">
-              <div class="panel-heading">
-                <div>
-                  <p class="kicker">WEBHOOK OPERATIONS</p>
-                  <h2>Record an external replay</h2>
-                  <p>
-                    This records an audit event only. It does not execute the
-                    webhook again.
-                  </p>
+            <details
+              class="panel replay-audit-panel admin-control advanced-settings"
+            >
+              <summary>Webhook operations</summary>
+              <div class="advanced-settings-body">
+                <div class="panel-heading">
+                  <div>
+                    <p class="kicker">WEBHOOK OPERATIONS</p>
+                    <h2>Record an external replay</h2>
+                    <p>
+                      This records an audit event only. It does not execute the
+                      webhook again.
+                    </p>
+                  </div>
                 </div>
+                <form id="replay-audit-form" class="inline-form">
+                  <label
+                    >Webhook connector ID<input
+                      id="replay-connector-id"
+                      type="number"
+                      min="1"
+                      required
+                  /></label>
+                  <label
+                    >Event ID<input
+                      id="replay-event-id"
+                      maxlength="200"
+                      required
+                  /></label>
+                  <label class="checkbox-label"
+                    ><input
+                      id="replay-idempotent"
+                      type="checkbox"
+                      checked
+                    />Already idempotent</label
+                  >
+                  <button class="button button-secondary" type="submit">
+                    <i data-lucide="file-plus-2"></i>Record replay
+                  </button>
+                </form>
               </div>
-              <form id="replay-audit-form" class="inline-form">
-                <label
-                  >Webhook connector ID<input
-                    id="replay-connector-id"
-                    type="number"
-                    min="1"
-                    required
-                /></label>
-                <label
-                  >Event ID<input id="replay-event-id" maxlength="200" required
-                /></label>
-                <label class="checkbox-label"
-                  ><input
-                    id="replay-idempotent"
-                    type="checkbox"
-                    checked
-                  />Already idempotent</label
-                >
-                <button class="button button-secondary" type="submit">
-                  <i data-lucide="file-plus-2"></i>Record replay
-                </button>
-              </form>
-            </section>
+            </details>
           </section>
 
           <section id="view-settings" class="view hidden">
             <div class="view-heading">
               <div>
-                <p class="kicker">WORKSPACE ADMIN</p>
+                <p class="kicker">ACCOUNT</p>
                 <h1>Settings</h1>
                 <p class="view-subtitle">
-                  Manage your workspace preferences and API access.
+                  Keep your profile and workspace preferences up to date.
                 </p>
               </div>
             </div>
+            <section class="profile-layout">
+              <section class="panel profile-card">
+                <div class="profile-card-heading">
+                  <div>
+                    <p class="kicker">YOUR PROFILE</p>
+                    <h2>How your team sees you</h2>
+                    <p>
+                      Use a clear name and title so comments and activity are
+                      easy to recognize.
+                    </p>
+                  </div>
+                </div>
+                <div class="profile-identity">
+                  <div id="profile-avatar" class="profile-avatar">AM</div>
+                  <div class="profile-avatar-actions">
+                    <input
+                      id="profile-photo-input"
+                      type="file"
+                      accept="image/jpeg,image/png"
+                      hidden
+                    />
+                    <button
+                      id="upload-profile-photo"
+                      class="button button-secondary"
+                      type="button"
+                    >
+                      <i data-lucide="camera"></i>Upload photo
+                    </button>
+                    <button
+                      id="remove-profile-photo"
+                      class="text-button hidden"
+                      type="button"
+                    >
+                      Remove photo
+                    </button>
+                    <small>JPG or PNG, up to 5MB</small>
+                  </div>
+                </div>
+                <form id="profile-form" class="profile-form">
+                  <label
+                    >Full name<input
+                      id="profile-name"
+                      required
+                      minlength="2"
+                      maxlength="80"
+                  /></label>
+                  <label
+                    >Work email<input id="profile-email" type="email" readonly
+                  /></label>
+                  <label
+                    >Role or title <span class="optional-label">Optional</span
+                    ><input
+                      id="profile-title"
+                      maxlength="120"
+                      placeholder="Operations lead"
+                  /></label>
+                  <div id="profile-actions" class="profile-actions hidden">
+                    <button
+                      id="cancel-profile"
+                      class="button button-secondary"
+                      type="button"
+                    >
+                      Cancel
+                    </button>
+                    <button class="button button-primary" type="submit">
+                      <i data-lucide="check"></i>Save changes
+                    </button>
+                  </div>
+                </form>
+              </section>
+              <section class="panel profile-security-card">
+                <div class="profile-card-heading">
+                  <p class="kicker">SECURITY</p>
+                  <h2>Keep your account protected</h2>
+                  <p>Update your password without leaving your workspace.</p>
+                </div>
+                <div class="security-action">
+                  <span class="security-icon"
+                    ><i data-lucide="lock-keyhole"></i
+                  ></span>
+                  <div>
+                    <strong>Password</strong
+                    ><small
+                      >Choose a strong password you do not reuse
+                      elsewhere.</small
+                    >
+                  </div>
+                  <button
+                    id="open-password-modal"
+                    class="button button-secondary"
+                    type="button"
+                  >
+                    Change password
+                  </button>
+                </div>
+              </section>
+            </section>
             <section class="panel settings-panel">
               <div class="settings-intro">
                 <span class="workspace-avatar large">A</span>
@@ -889,24 +1057,63 @@
             >Connector name<input
               id="connector-name"
               placeholder="Client CRM"
-              required /></label
-          ><label
-            >Source type<select id="connector-kind">
+              required
+          /></label>
+          <fieldset class="source-type-fieldset">
+            <legend>Source type</legend>
+            <div class="source-type-options">
+              <button
+                class="source-type-option selected"
+                type="button"
+                data-connector-kind="rest"
+              >
+                <i data-lucide="globe-2"></i><strong>REST API</strong
+                ><small>Pull from an endpoint</small>
+              </button>
+              <button
+                class="source-type-option"
+                type="button"
+                data-connector-kind="webhook"
+              >
+                <i data-lucide="webhook"></i><strong>Webhook</strong
+                ><small>Receive signed events</small>
+              </button>
+              <button
+                class="source-type-option"
+                type="button"
+                data-connector-kind="csv"
+              >
+                <i data-lucide="file-spreadsheet"></i><strong>CSV upload</strong
+                ><small>Import a file</small>
+              </button>
+            </div>
+            <select
+              id="connector-kind"
+              class="visually-hidden"
+              aria-hidden="true"
+              tabindex="-1"
+            >
               <option value="rest">REST API</option>
               <option value="webhook">Webhook</option>
               <option value="csv">CSV upload</option>
-            </select></label
-          ><label id="endpoint-field"
-            >Endpoint URL<input
-              id="connector-endpoint"
-              type="url"
-              placeholder="https://api.example.com/contacts" /></label
-          ><label id="secret-field"
-            >Bearer token or signing secret<input
-              id="connector-secret"
-              type="password"
-              placeholder="Optional for REST"
-          /></label>
+            </select>
+          </fieldset>
+          <details class="advanced-settings">
+            <summary>Advanced connection settings</summary>
+            <div class="advanced-settings-body">
+              <label id="endpoint-field"
+                >Endpoint URL<input
+                  id="connector-endpoint"
+                  type="url"
+                  placeholder="https://api.example.com/contacts" /></label
+              ><label id="secret-field"
+                >Bearer token or signing secret<input
+                  id="connector-secret"
+                  type="password"
+                  placeholder="Optional for REST"
+              /></label>
+            </div>
+          </details>
           <div class="modal-actions">
             <button
               type="button"
@@ -916,6 +1123,67 @@
               Cancel</button
             ><button type="submit" class="button button-primary">
               Create connector <i data-lucide="arrow-up-right"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div
+      id="password-modal"
+      class="modal hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="password-modal-title"
+    >
+      <div class="modal-card password-modal-card">
+        <div class="modal-heading">
+          <div>
+            <p class="kicker">SECURITY</p>
+            <h2 id="password-modal-title">Change your password</h2>
+          </div>
+          <button
+            id="close-password-modal"
+            class="icon-button"
+            type="button"
+            aria-label="Close password dialog"
+          >
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <form id="password-form" class="password-form">
+          <label
+            >Current password<input
+              id="current-password"
+              type="password"
+              required
+          /></label>
+          <label
+            >New password<input
+              id="new-password"
+              type="password"
+              minlength="6"
+              required
+            /><small class="field-hint"
+              >6 characters minimum. Longer, mixed passwords are
+              stronger.</small
+            ></label
+          >
+          <label
+            >Confirm new password<input
+              id="confirm-password"
+              type="password"
+              minlength="6"
+              required
+          /></label>
+          <div class="modal-actions">
+            <button
+              id="cancel-password-modal"
+              class="button button-secondary"
+              type="button"
+            >
+              Cancel</button
+            ><button class="button button-primary" type="submit">
+              <i data-lucide="shield-check"></i>Update password
             </button>
           </div>
         </form>

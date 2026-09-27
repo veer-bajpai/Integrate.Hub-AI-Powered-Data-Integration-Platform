@@ -16,7 +16,8 @@ The AI layer is deliberately optional. When `GEMINI_API_KEY` is configured, Gemi
 - **CRM workspace tools:** record comments with highlighted `@mentions`, a unified activity feed, workspace search, and per-user saved record filters.
 - **Dashboard statistics:** user-scoped, SQL-aggregated daily record and duplicate counts, source totals, and connector sync activity with a 30-second in-memory cache.
 - **Document library controls:** upload, download, and delete workspace documents from the browser library.
-- **Browser UI:** split-screen sign-in/register experience with inline validation; typography uses an SF Pro-first system stack and platform fallbacks.
+- **Account profile:** edit name and optional title, manage a circular JPG/PNG avatar with drag-and-drop upload/removal, and change the account password from Settings.
+- **Browser UI:** split-screen sign-in/register experience with inline validation, a branded dashboard, guided empty states, responsive navigation, and progressive disclosure for advanced controls.
 - **Local-first storage:** SQLite and a mounted uploads directory keep the project easy to run locally and with Docker.
 - **Inspectable API:** FastAPI publishes interactive OpenAPI documentation at `/docs`.
 
@@ -59,6 +60,8 @@ The editable diagram is also available in [docs/architecture.md](docs/architectu
 ### 1. Create a workspace
 
 Register with a name, email, and password, or use an existing account. Registration creates a default workspace and makes the registering user its owner. Workspace membership is separate from authentication: an account can belong to multiple workspaces, and authenticated API requests can select one with `X-Workspace-ID`. Without that header, the first workspace membership is used. A user who is not a member receives `404` for that workspace.
+
+Google sign-in is available when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are configured. New Google users receive an owner workspace; existing users are matched by verified email. The browser stores the returned JWT in local storage for the current local-first client flow.
 
 Roles are `owner`, `admin`, and `member`. Owners and admins can manage team membership, connector secret rotation, audit access, and AI rollout settings; only owners can grant the admin role. Existing database rows are migrated into a default owner workspace per user at startup.
 
@@ -110,9 +113,13 @@ Example response shape (counts are illustrative):
 }
 ```
 
-The browser fetches these arrays once during each dashboard load and keeps them in `state.dashboardStats`, falling back to zero-filled arrays on errors or empty series. The current dashboard has no chart containers or chart-rendering functions, so these arrays are not yet visualized as charts; existing KPI tiles and layout remain unchanged. The stats endpoint is user-scoped (`user_id`) and does not use the workspace selector.
+The browser fetches these arrays once during each dashboard load and keeps them in `state.dashboardStats`, falling back to zero-filled arrays on errors or empty series. The overview renders a 14-day records bar chart and source-mix bars; a new workspace receives guided onboarding copy instead of presenting raw zero values. The stats endpoint is user-scoped (`user_id`) and does not use the workspace selector.
 
 The frontend uses an SF Pro-first font stack. Apple platforms use SF Pro/system fonts; Windows falls back to Segoe UI, then generic sans-serif if SF Pro is unavailable.
+
+### 6. Manage your profile
+
+Open **Settings** to update the full name and optional role/title shown in the workspace activity feed. Work email is read-only. Profile photos accept JPG or PNG files up to 5 MB; uploads can be selected or dropped onto the circular avatar and are center-cropped before saving. **Change password** opens a separate security dialog and confirms success without reloading the page.
 
 ## Quick start
 
@@ -161,7 +168,7 @@ Copy `.env.example` to `.env` before starting the server:
 | `GEMINI_API_KEY`                              | empty                        | Enables Gemini mapping suggestions and assistant responses. Empty means local fallback behavior.                       |
 | `GEMINI_MODEL`                                | `gemini-2.0-flash`           | Gemini model name used by the optional AI layer.                                                                       |
 | `OAUTH_BASE_URL`                              | `http://127.0.0.1:8000`      | Public base URL used to build OAuth callback URLs. Use your HTTPS deployment URL outside local development.            |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`   | empty                        | Google OAuth credentials for Google Sheets sign-in.                                                                    |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`   | empty                        | Google OAuth credentials for Google sign-in and Google Sheets connections.                                             |
 | `SLACK_CLIENT_ID` / `SLACK_CLIENT_SECRET`     | empty                        | Slack OAuth credentials for Slack sign-in.                                                                             |
 | `HUBSPOT_CLIENT_ID` / `HUBSPOT_CLIENT_SECRET` | empty                        | HubSpot OAuth credentials for HubSpot sign-in.                                                                         |
 
@@ -173,6 +180,7 @@ Create OAuth applications in the Google Cloud Console, Slack API dashboard, and 
 
 ```text
 http://127.0.0.1:8000/api/integrations/oauth/google/callback
+http://127.0.0.1:8000/api/auth/google/callback
 http://127.0.0.1:8000/api/integrations/oauth/slack/callback
 http://127.0.0.1:8000/api/integrations/oauth/hubspot/callback
 ```
@@ -183,23 +191,24 @@ Copy each client ID and secret into `.env`, restart the server, and use **App co
 
 Authentication uses `Authorization: Bearer <token>` except for webhook ingestion, which is authenticated by its HMAC signature.
 
-| Area            | Routes                                                                                                    |
-| --------------- | --------------------------------------------------------------------------------------------------------- |
-| Health          | `GET /health`                                                                                             |
-| Auth            | `POST /api/auth/register`, `POST /api/auth/login`                                                         |
-| Workspace       | `GET /api/dashboard`, `GET/POST /api/workspaces`                                                          |
-| Dashboard stats | `GET /api/stats/dashboard`                                                                                |
-| Team & roles    | `GET/POST /api/workspaces/{id}/members`, `PATCH /api/workspaces/{id}/members/{user_id}`                   |
-| Administration  | `GET /api/workspaces/{id}/audit-log`, `POST /api/workspaces/{id}/connectors/{connector_id}/rotate-secret` |
-| AI rollout      | `GET/PATCH /api/workspaces/{id}/ai-settings`                                                              |
-| Connectors      | `GET/POST /api/connectors`, `GET /api/connectors/{id}/health`, `POST /api/connectors/{id}/sync`           |
-| Ingestion       | `POST /api/ingest/csv`, `POST /api/webhooks/{connector_id}`                                               |
-| AI              | `POST /api/connectors/suggest-mapping`, `POST /api/clients/assistant/chat`                                |
-| Records         | `GET /api/records`, `GET /api/records/{id}`                                                               |
-| CRM v1          | `GET/POST /api/records/{id}/comments`, `GET /api/activity`, `GET /api/search?q=...`                       |
-| Saved views     | `GET/POST /api/records/saved-views`, `DELETE /api/records/saved-views/{id}`                               |
-| Documents       | `GET/POST /api/documents`, `GET /api/documents/{id}/download`, `DELETE /api/documents/{id}`               |
-| App connections | `GET /api/integrations`, `POST /api/integrations/{id}`                                                    |
+| Area            | Routes                                                                                                           |
+| --------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Health          | `GET /health`                                                                                                    |
+| Auth            | `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/google/start`, `GET /api/auth/google/callback` |
+| Profile         | `GET/PUT /api/profile`, `POST /api/profile/password`                                                             |
+| Workspace       | `GET /api/dashboard`, `GET/POST /api/workspaces`                                                                 |
+| Dashboard stats | `GET /api/stats/dashboard`                                                                                       |
+| Team & roles    | `GET/POST /api/workspaces/{id}/members`, `PATCH /api/workspaces/{id}/members/{user_id}`                          |
+| Administration  | `GET /api/workspaces/{id}/audit-log`, `POST /api/workspaces/{id}/connectors/{connector_id}/rotate-secret`        |
+| AI rollout      | `GET/PATCH /api/workspaces/{id}/ai-settings`                                                                     |
+| Connectors      | `GET/POST /api/connectors`, `GET /api/connectors/{id}/health`, `POST /api/connectors/{id}/sync`                  |
+| Ingestion       | `POST /api/ingest/csv`, `POST /api/webhooks/{connector_id}`                                                      |
+| AI              | `POST /api/connectors/suggest-mapping`, `POST /api/clients/assistant/chat`                                       |
+| Records         | `GET /api/records`, `GET /api/records/{id}`                                                                      |
+| CRM v1          | `GET/POST /api/records/{id}/comments`, `GET /api/activity`, `GET /api/search?q=...`                              |
+| Saved views     | `GET/POST /api/records/saved-views`, `DELETE /api/records/saved-views/{id}`                                      |
+| Documents       | `GET/POST /api/documents`, `GET /api/documents/{id}/download`, `DELETE /api/documents/{id}`                      |
+| App connections | `GET /api/integrations`, `POST /api/integrations/{id}`                                                           |
 
 `POST /api/workspaces/{id}/audit-log/webhook-replay` records an administrator-reported replay event and stores its explicit `already_idempotent` value. It does not execute or reprocess webhook payloads; the existing webhook ingestion contract and implementation remain unchanged. Gemini mapping uses a stable SHA-256 workspace bucket against the configured rollout percentage, with a workspace-level kill switch; excluded workspaces use the local fallback.
 
@@ -242,6 +251,8 @@ IntegrateHub/
 
 - Passwords are stored as salted PBKDF2-HMAC-SHA256 hashes.
 - JWTs expire after 12 hours and are required for workspace-owned endpoints.
+- Profile avatars are validated as JPG/PNG data and limited to 5 MB before being stored with the user profile.
+- Profile updates are user-scoped; work email remains read-only through the browser profile screen.
 - Connector secrets are encrypted at rest when `cryptography` is available; the API never returns the encrypted value.
 - Webhooks use constant-time HMAC comparison.
 - User IDs are included in database queries to prevent cross-workspace reads and downloads.
@@ -266,7 +277,6 @@ The second command should print `{'status': 'ok', 'database': 'connected'}` and 
 ## Known limitations
 
 - SQLite is appropriate for local and small internal use, but there are no migrations, pooling, or multi-instance coordination.
-- Dashboard chart components are not present yet. The stats endpoint and zero-fallback frontend state are ready, but chart rendering remains pending.
 - The in-memory stats cache is single-process only; multiple API workers would need a shared cache or accept independent 30-second results.
 - The stats endpoint scopes by user ID, while most CRM APIs use workspace membership. Users in multiple workspaces currently receive stats across their own records/connectors rather than the selected workspace.
 - `sync_volume_by_connector.last_7_days` counts ingestion-log events when available, not imported records; it falls back to the current connector record total when no recent logs exist.

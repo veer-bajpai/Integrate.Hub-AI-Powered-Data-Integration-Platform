@@ -6,6 +6,7 @@ const state = {
   workspaces: [],
   dashboard: null,
   dashboardStats: null,
+  profile: null,
   records: [],
   savedViews: [],
   selectedRecordId: null,
@@ -95,6 +96,115 @@ function initials(name) {
     .join("")
     .toUpperCase();
 }
+function renderAvatar(element, profile, sizeClass = "") {
+  if (!element) return;
+  element.classList.toggle("has-photo", Boolean(profile?.avatar_data));
+  element.className =
+    `${element.className.replace(/\bhas-photo\b/g, "").trim()} ${sizeClass}`.trim();
+  element.innerHTML = profile?.avatar_data
+    ? `<img src="${profile.avatar_data}" alt="" />`
+    : escapeHtml(initials(profile?.name || "IntegrateHub"));
+}
+function profileChanged() {
+  const profile = state.profile || {};
+  return (
+    $("#profile-name").value.trim() !== profile.name ||
+    $("#profile-title").value.trim() !== (profile.title || "")
+  );
+}
+function syncProfileActions() {
+  $("#profile-actions").classList.toggle("hidden", !profileChanged());
+}
+async function loadProfile() {
+  try {
+    state.profile = await api("/api/profile");
+    $("#profile-name").value = state.profile.name;
+    $("#profile-email").value = state.profile.email;
+    $("#profile-title").value = state.profile.title || "";
+    renderAvatar($("#profile-avatar"), state.profile);
+    renderAvatar($("#user-avatar"), state.profile);
+    renderAvatar($("#top-avatar"), state.profile);
+    $("#remove-profile-photo").classList.toggle(
+      "hidden",
+      !state.profile.avatar_data,
+    );
+  } catch (error) {
+    toast(error.message, true);
+  }
+}
+async function saveProfile(avatarData = state.profile?.avatar_data || null) {
+  try {
+    state.profile = await api("/api/profile", {
+      method: "PUT",
+      body: JSON.stringify({
+        name: $("#profile-name").value.trim(),
+        title: $("#profile-title").value.trim(),
+        avatar_data: avatarData,
+      }),
+    });
+    renderAvatar($("#profile-avatar"), state.profile);
+    renderAvatar($("#user-avatar"), state.profile);
+    renderAvatar($("#top-avatar"), state.profile);
+    $("#remove-profile-photo").classList.toggle(
+      "hidden",
+      !state.profile.avatar_data,
+    );
+    $("#profile-actions").classList.add("hidden");
+    $("#user-name").textContent = state.profile.name;
+    $("#greeting-name").textContent = state.profile.name.split(" ")[0];
+    toast("Profile saved");
+  } catch (error) {
+    toast(error.message, true);
+  }
+}
+function cropProfilePhoto(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const image = new Image();
+      image.onload = () => {
+        const side = Math.min(image.naturalWidth, image.naturalHeight);
+        const canvas = document.createElement("canvas");
+        canvas.width = 512;
+        canvas.height = 512;
+        canvas
+          .getContext("2d")
+          .drawImage(
+            image,
+            (image.naturalWidth - side) / 2,
+            (image.naturalHeight - side) / 2,
+            side,
+            side,
+            0,
+            0,
+            512,
+            512,
+          );
+        resolve(canvas.toDataURL("image/jpeg", 0.88));
+      };
+      image.onerror = reject;
+      image.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+async function handleProfilePhoto(file) {
+  if (!file) return;
+  if (!file.type.match(/^image\/(jpeg|png)$/)) {
+    toast("Choose a JPG or PNG image", true);
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    toast("Profile photo must be 5MB or smaller", true);
+    return;
+  }
+  try {
+    await saveProfile(await cropProfilePhoto(file));
+  } catch {
+    toast("Profile photo could not be read", true);
+  }
+}
 function navigate(view) {
   state.view = view;
   $$(".view").forEach((element) =>
@@ -118,17 +228,49 @@ function navigate(view) {
   if (view === "team") loadTeam();
   if (view === "audit") loadAudit();
   if (view === "automation") loadAISettings();
+  if (view === "settings") loadProfile();
   icons();
 }
+function emptyStateMarkup(icon, title, copy, target, action) {
+  return `<div class="empty-state"><span class="empty-state-icon"><i data-lucide="${icon}"></i></span><strong>${escapeHtml(title)}</strong><p>${escapeHtml(copy)}</p>${target && action ? `<button class="button button-secondary" data-view-target="${escapeHtml(target)}"><i data-lucide="arrow-up-right"></i>${escapeHtml(action)}</button>` : ""}</div>`;
+}
 function renderMetrics(metrics, user) {
-  $("#metric-records").textContent = metrics.records.toLocaleString();
-  $("#metric-connectors").textContent = metrics.connectors;
-  $("#metric-duplicates").textContent = metrics.duplicates;
-  $("#metric-documents").textContent = metrics.documents;
+  const isNewWorkspace =
+    metrics.records === 0 &&
+    metrics.connectors === 0 &&
+    metrics.documents === 0;
+  const metricValues = {
+    records: isNewWorkspace ? "--" : metrics.records.toLocaleString(),
+    connectors: isNewWorkspace ? "--" : metrics.connectors,
+    duplicates: isNewWorkspace ? "--" : metrics.duplicates,
+    documents: isNewWorkspace ? "--" : metrics.documents,
+  };
+  $("#metric-records").textContent = metricValues.records;
+  $("#metric-connectors").textContent = metricValues.connectors;
+  $("#metric-duplicates").textContent = metricValues.duplicates;
+  $("#metric-documents").textContent = metricValues.documents;
+  $("#metric-records-status").textContent = isNewWorkspace
+    ? "Connect a source to begin"
+    : "Across your connected sources";
+  $("#metric-connectors-status").textContent = isNewWorkspace
+    ? "Your sources will appear here"
+    : `${metrics.connectors} source${metrics.connectors === 1 ? "" : "s"} connected`;
+  $("#metric-duplicates-status").textContent = isNewWorkspace
+    ? "Nothing needs review yet"
+    : metrics.duplicates
+      ? "Needs review in your queue"
+      : "No duplicates flagged";
+  $("#metric-documents-status").textContent = isNewWorkspace
+    ? "Add context for your team"
+    : `${metrics.documents} document${metrics.documents === 1 ? "" : "s"} available`;
+  $("#dashboard-empty-state").classList.toggle("hidden", !isNewWorkspace);
+  $$(".metric-card").forEach((card) =>
+    card.classList.toggle("metric-empty", isNewWorkspace),
+  );
   $("#user-name").textContent = user.name;
   $("#greeting-name").textContent = user.name.split(" ")[0];
-  $("#user-avatar").textContent = initials(user.name);
-  $("#top-avatar").textContent = initials(user.name);
+  renderAvatar($("#user-avatar"), state.profile || user);
+  renderAvatar($("#top-avatar"), state.profile || user);
   $("#user-role").textContent =
     state.currentWorkspace?.role?.replace(/^./, (letter) =>
       letter.toUpperCase(),
@@ -144,7 +286,14 @@ function renderHealth(connectors) {
             `<div class="health-row"><span class="health-symbol">${escapeHtml(connector.kind === "webhook" ? "WH" : connector.kind === "csv" ? "CSV" : "API")}</span><div class="health-main"><strong>${escapeHtml(connector.name)}</strong><small>Last sync ${formatDate(connector.last_sync)}</small></div><span class="health-rate">${Number(connector.success_rate || 0).toFixed(1)}%</span></div>`,
         )
         .join("")
-    : '<div class="empty-state">No connectors yet. Start with a source above.</div>';
+    : emptyStateMarkup(
+        "plug-zap",
+        "No connectors yet",
+        "Bring in a CSV, REST endpoint, or webhook to create your first clean records.",
+        "connectors",
+        "Connect a source",
+      );
+  icons();
 }
 function renderActivity(logs) {
   $("#activity-list").innerHTML = logs.length
@@ -154,7 +303,55 @@ function renderActivity(logs) {
             `<div class="activity-row"><span class="activity-dot ${escapeHtml(log.status || log.type)}"></span><div><strong>${log.actor_name ? `${escapeHtml(log.actor_name)} · ` : ""}${escapeHtml(log.summary || log.message)}</strong><small>${formatDate(log.created_at)}</small></div></div>`,
         )
         .join("")
-    : '<div class="empty-state">Workspace activity will appear here.</div>';
+    : emptyStateMarkup(
+        "activity",
+        "Your workspace is quiet",
+        "Connector syncs, comments, and team changes will appear here as you work.",
+        "connectors",
+        "Set up a connector",
+      );
+  icons();
+}
+function renderDashboardCharts(stats) {
+  const recordSeries = stats?.records_by_day || [];
+  const sourceSeries = stats?.records_by_source || [];
+  const recordMax = Math.max(
+    ...recordSeries.map((item) => Number(item.count) || 0),
+    1,
+  );
+  const sourceTotal = sourceSeries.reduce(
+    (total, item) => total + (Number(item.count) || 0),
+    0,
+  );
+  const sourceColors = { csv: "blue", webhook: "amber", rest: "teal" };
+  $("#records-chart").innerHTML = recordSeries.length
+    ? recordSeries
+        .map((item, index) => {
+          const date = new Date(`${item.date}T00:00:00Z`);
+          const label = date.toLocaleDateString([], {
+            month: "short",
+            day: "numeric",
+          });
+          const height = Math.max(
+            ((Number(item.count) || 0) / recordMax) * 100,
+            4,
+          );
+          return `<div class="chart-column" title="${escapeHtml(label)}: ${Number(item.count) || 0} records"><span class="chart-value">${Number(item.count) || 0}</span><span class="chart-bar" style="height: ${height}%"></span><small>${index % 2 === 0 ? escapeHtml(label) : ""}</small></div>`;
+        })
+        .join("")
+    : '<div class="empty-state">No record activity yet.</div>';
+  $("#source-chart").innerHTML = sourceSeries.length
+    ? sourceSeries
+        .map((item) => {
+          const count = Number(item.count) || 0;
+          const percentage = sourceTotal
+            ? Math.round((count / sourceTotal) * 100)
+            : 0;
+          const color = sourceColors[item.source] || "blue";
+          return `<div class="source-row"><div class="source-row-heading"><span><i class="source-dot ${color}"></i>${escapeHtml(item.source)}</span><strong>${count.toLocaleString()}</strong></div><div class="source-track"><span class="source-fill ${color}" style="width: ${percentage}%"></span></div><small>${percentage}% of records</small></div>`;
+        })
+        .join("")
+    : '<div class="empty-state">No source activity yet.</div>';
 }
 function emptyDashboardStats() {
   const dateSeries = (days) => {
@@ -211,7 +408,9 @@ async function loadWorkspace() {
     await loadWorkspaces();
     state.dashboard = await api("/api/dashboard");
     state.dashboardStats = await loadDashboardStats();
+    state.profile = await api("/api/profile");
     renderMetrics(state.dashboard.metrics, state.dashboard.user);
+    renderDashboardCharts(state.dashboardStats);
     renderHealth(state.dashboard.connectors);
     await loadActivityFeed();
     await loadConnectors();
@@ -230,7 +429,7 @@ async function loadConnectors() {
   renderConnectorDestinations();
   $("#connector-count").textContent = connectors.length;
   $("#connectors-table").innerHTML =
-    `<div class="data-head"><span>NAME</span><span>TYPE</span><span>RECORDS</span><span>HEALTH</span><span>LAST SYNC</span></div>${connectors.length ? connectors.map((connector) => `<div class="data-row"><strong>${escapeHtml(connector.name)}</strong><span class="type-tag">${escapeHtml(connector.kind)}</span><span>${Number(connector.records || 0).toLocaleString()}</span><span class="${connector.status === "healthy" ? "status-pill healthy" : "status-pill"}">${Number(connector.success_rate || 0).toFixed(1)}%</span><span>${formatDate(connector.last_sync)} ${connector.kind === "rest" ? `<button class="text-button sync-connector" data-id="${connector.id}">Sync <i data-lucide="arrow-up-right"></i></button>` : ""}</span></div>`).join("") : '<div class="empty-state">No connectors yet. Create your first source to start ingesting.</div>'}</div>`;
+    `<div class="data-head"><span>NAME</span><span>TYPE</span><span>RECORDS</span><span>HEALTH</span><span>LAST SYNC</span></div>${connectors.length ? connectors.map((connector) => `<div class="data-row"><strong>${escapeHtml(connector.name)}</strong><span class="type-tag">${escapeHtml(connector.kind)}</span><span>${Number(connector.records || 0).toLocaleString()}</span><span class="${connector.status === "healthy" ? "status-pill healthy" : "status-pill"}">${Number(connector.success_rate || 0).toFixed(1)}%</span><span>${formatDate(connector.last_sync)} ${connector.kind === "rest" ? `<button class="text-button sync-connector" data-id="${connector.id}">Sync <i data-lucide="arrow-up-right"></i></button>` : ""}</span></div>`).join("") : emptyStateMarkup("plug-zap", "No connectors yet", "Create a source once and the inventory will become your control center.", "connectors", "Create your first connector")}</div>`;
   $$(".sync-connector").forEach((button) =>
     button.addEventListener("click", () => syncConnector(button)),
   );
@@ -283,7 +482,17 @@ function renderRecords(records) {
     `${records.length} shown · ${state.records.length} normalized record${state.records.length === 1 ? "" : "s"}`;
   $("#records-table").innerHTML = rows
     ? `<div class="data-head"><span>RECORD</span><span>SOURCE</span><span>STATUS</span><span>CREATED</span></div>${rows}`
-    : '<div class="empty-state">No matching records found.</div>';
+    : emptyStateMarkup(
+        "database",
+        state.records.length
+          ? "No records match these filters"
+          : "No records yet",
+        state.records.length
+          ? "Try clearing a filter or searching for a different value."
+          : "Connect a source or import a CSV to start building your normalized data layer.",
+        state.records.length ? "" : "connectors",
+        state.records.length ? "" : "Connect a source",
+      );
   $$(".record-row").forEach((row) => {
     row.addEventListener("click", () =>
       openRecordDetail(Number(row.dataset.recordId)),
@@ -447,7 +656,13 @@ async function loadDocuments() {
     const documents = await api("/api/documents");
     $("#documents-list").innerHTML = documents.length
       ? `<div class="data-head"><span>NAME</span><span>SIZE</span><span>ADDED</span><span></span></div>${documents.map((document) => `<div class="data-row"><strong>${escapeHtml(document.name)}</strong><span>${(document.size / 1024).toFixed(1)} KB</span><span>${formatDate(document.created_at)}</span><span class="document-actions"><a class="text-button" href="/api/documents/${document.id}/download" target="_blank">Download <i data-lucide="arrow-up-right"></i></a><button class="icon-button delete-document" type="button" data-id="${document.id}" data-name="${escapeHtml(document.name)}" title="Delete document" aria-label="Delete ${escapeHtml(document.name)}"><i data-lucide="trash-2"></i></button></span></div>`).join("")}`
-      : '<div class="empty-state">No documents yet. Upload a payload example or client brief.</div>';
+      : emptyStateMarkup(
+          "file-text",
+          "Your library is ready for context",
+          "Upload a payload example, client brief, or data dictionary so your team has the right context nearby.",
+          "documents",
+          "Upload your first document",
+        );
     $$(".delete-document").forEach((button) =>
       button.addEventListener("click", () => deleteDocument(button)),
     );
@@ -605,7 +820,13 @@ async function loadAudit() {
             return `<article class="audit-row"><span class="audit-icon"><i data-lucide="${entry.action === "role_changed" ? "user-round-cog" : entry.action === "connector_secret_rotated" ? "key-round" : entry.action === "webhook_replay_recorded" ? "rotate-cw" : "activity"}"></i></span><div class="audit-copy"><strong>${escapeHtml(entry.action.replaceAll("_", " "))}</strong><small>${escapeHtml(entry.actor_name)} · ${escapeHtml(entry.target_type)} ${escapeHtml(entry.target_id || "")}</small></div><div class="audit-meta">${marker}<time>${formatDate(entry.created_at)}</time></div></article>`;
           })
           .join("")
-      : '<div class="empty-state">No administrative events recorded yet.</div>';
+      : emptyStateMarkup(
+          "shield-check",
+          "No administrative events yet",
+          "Role changes, credential updates, and replay records will be captured here automatically.",
+          "team",
+          "Review team access",
+        );
     icons();
   } catch (error) {
     $("#audit-list").innerHTML =
@@ -686,6 +907,15 @@ function openModal() {
 function closeModal() {
   $("#connector-modal").classList.add("hidden");
   $("#connector-form").reset();
+  $("#connector-kind").value = "rest";
+  $$(".source-type-option").forEach((option) =>
+    option.classList.toggle(
+      "selected",
+      option.dataset.connectorKind === "rest",
+    ),
+  );
+  $("#endpoint-field").classList.remove("hidden");
+  $("#secret-field").classList.remove("hidden");
 }
 async function uploadDocument(file) {
   if (!file) return;
@@ -729,7 +959,7 @@ function validateAuthForm(form) {
   return valid;
 }
 
-$$(".nav-item[data-view], [data-view-target]").forEach((item) =>
+$$(".nav-item[data-view]").forEach((item) =>
   item.addEventListener("click", () =>
     navigate(item.dataset.view || item.dataset.viewTarget),
   ),
@@ -804,9 +1034,18 @@ $("#register-form").addEventListener("submit", async (event) => {
     setAuthFieldError(field, error.message);
   }
 });
-$("#google-auth").addEventListener("click", () =>
-  toast("Google sign-in is not configured yet."),
-);
+$("#google-auth").addEventListener("click", async () => {
+  const button = $("#google-auth");
+  button.disabled = true;
+  try {
+    const result = await api("/api/auth/google/start");
+    window.location.assign(result.url);
+  } catch (error) {
+    toast(error.message, true);
+  } finally {
+    button.disabled = false;
+  }
+});
 $("#logout").addEventListener("click", () => {
   state.token = null;
   localStorage.removeItem("integratehub_token");
@@ -838,6 +1077,68 @@ $("#workspace-form").addEventListener("submit", async (event) => {
     toast("Workspace created");
     await loadWorkspace();
     navigate("team");
+  } catch (error) {
+    toast(error.message, true);
+  }
+});
+$("#profile-name").addEventListener("input", syncProfileActions);
+$("#profile-title").addEventListener("input", syncProfileActions);
+$("#cancel-profile").addEventListener("click", () => {
+  $("#profile-name").value = state.profile.name;
+  $("#profile-title").value = state.profile.title || "";
+  $("#profile-actions").classList.add("hidden");
+});
+$("#profile-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await saveProfile();
+});
+$("#upload-profile-photo").addEventListener("click", () =>
+  $("#profile-photo-input").click(),
+);
+$("#profile-photo-input").addEventListener("change", async (event) => {
+  const file = event.target.files[0];
+  event.target.value = "";
+  await handleProfilePhoto(file);
+});
+$("#profile-avatar").addEventListener("dragover", (event) => {
+  event.preventDefault();
+  $("#profile-avatar").classList.add("dragging");
+});
+$("#profile-avatar").addEventListener("dragleave", () =>
+  $("#profile-avatar").classList.remove("dragging"),
+);
+$("#profile-avatar").addEventListener("drop", async (event) => {
+  event.preventDefault();
+  $("#profile-avatar").classList.remove("dragging");
+  await handleProfilePhoto(event.dataTransfer.files[0]);
+});
+$("#remove-profile-photo").addEventListener("click", async () => {
+  await saveProfile(null);
+});
+$("#open-password-modal").addEventListener("click", () => {
+  $("#password-modal").classList.remove("hidden");
+  $("#current-password").focus();
+});
+function closePasswordModal() {
+  $("#password-modal").classList.add("hidden");
+  $("#password-form").reset();
+}
+$("#close-password-modal").addEventListener("click", closePasswordModal);
+$("#cancel-password-modal").addEventListener("click", closePasswordModal);
+$("#password-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if ($("#new-password").value !== $("#confirm-password").value)
+    return toast("New passwords do not match", true);
+  try {
+    await api("/api/profile/password", {
+      method: "POST",
+      body: JSON.stringify({
+        current_password: $("#current-password").value,
+        new_password: $("#new-password").value,
+      }),
+    });
+    closePasswordModal();
+    toast("Password updated");
   } catch (error) {
     toast(error.message, true);
   }
@@ -909,6 +1210,16 @@ $("#connector-kind").addEventListener("change", () => {
   $("#endpoint-field").classList.toggle("hidden", csv);
   $("#secret-field").classList.toggle("hidden", csv);
 });
+$$(".source-type-option").forEach((option) =>
+  option.addEventListener("click", () => {
+    $("#connector-kind").value = option.dataset.connectorKind;
+    $$(".source-type-option").forEach((item) =>
+      item.classList.toggle("selected", item === option),
+    );
+    $("#connector-kind").dispatchEvent(new Event("change"));
+    icons();
+  }),
+);
 $("#suggest-mapping").addEventListener("click", async () => {
   const sample = $("#mapping-sample").value.trim();
   if (!sample) return toast("Paste a sample first", true);
@@ -1037,6 +1348,8 @@ $("#global-search-results").addEventListener("click", async (event) => {
   await openRecordDetail(recordId);
 });
 document.addEventListener("click", (event) => {
+  const viewTarget = event.target.closest("[data-view-target]");
+  if (viewTarget) navigate(viewTarget.dataset.viewTarget);
   if (!event.target.closest(".global-search-wrap"))
     $("#global-search-results").classList.add("hidden");
 });

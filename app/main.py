@@ -20,7 +20,7 @@ import jwt
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 
@@ -56,6 +56,7 @@ OAUTH_PROVIDERS = {
         "authorize": "https://accounts.google.com/o/oauth2/v2/auth",
         "token": "https://oauth2.googleapis.com/token",
         "scopes": "openid email profile https://www.googleapis.com/auth/spreadsheets",
+        "userinfo": "https://openidconnect.googleapis.com/v1/userinfo",
     },
     "slack": {
         "client_id": "SLACK_CLIENT_ID",
@@ -257,6 +258,10 @@ def init_db() -> None:
         CREATE INDEX IF NOT EXISTS idx_comments_record ON comments(record_id,id);
         CREATE INDEX IF NOT EXISTS idx_saved_views_user_workspace ON saved_views(workspace_id,user_id,id DESC);
         """)
+        user_columns = {row[1] for row in connection.execute("PRAGMA table_info(users)").fetchall()}
+        for name, definition in {"title": "TEXT NOT NULL DEFAULT ''", "avatar_data": "TEXT"}.items():
+            if name not in user_columns:
+                connection.execute(f"ALTER TABLE users ADD COLUMN {name} {definition}")
         connector_columns = {row[1] for row in connection.execute("PRAGMA table_info(connectors)").fetchall()}
         for name, definition in {
             "endpoint_url": "TEXT",
@@ -285,6 +290,17 @@ class Credentials(BaseModel):
 
 class Registration(Credentials):
     name: str = Field(min_length=2, max_length=80)
+
+
+class ProfileUpdate(BaseModel):
+    name: str = Field(min_length=2, max_length=80)
+    title: str = Field(default="", max_length=120)
+    avatar_data: str | None = None
+
+
+class PasswordChange(BaseModel):
+    current_password: str = Field(min_length=1)
+    new_password: str = Field(min_length=6)
 
 
 class ChatRequest(BaseModel):
@@ -350,6 +366,11 @@ def oauth_redirect_uri(provider: str) -> str:
 
 def oauth_state(user_id: int, workspace_id: int, integration_id: int, provider: str) -> str:
     payload = {"sub": str(user_id), "workspace_id": workspace_id, "integration_id": integration_id, "provider": provider, "exp": datetime.now(timezone.utc) + timedelta(minutes=10)}
+    return jwt.encode(payload, JWT_SECRET, algorithm="HS256")
+
+
+def google_auth_state() -> str:
+    payload = {"purpose": "google_auth", "exp": datetime.now(timezone.utc) + timedelta(minutes=10)}
     return jwt.encode(payload, JWT_SECRET, algorithm="HS256")
 
 
@@ -429,6 +450,104 @@ def login(payload: Credentials) -> dict[str, Any]:
     if not user or not verify_password(payload.password, user["password"]):
         raise HTTPException(401, "Email or password is incorrect")
     return {"token": token_for(user), "user": {"id": user["id"], "name": user["name"], "email": user["email"]}}
+
+
+@app.get("/api/profile")
+def profile(user: sqlite3.Row = Depends(current_user)) -> dict[str, Any]:
+    return {"name": user["name"], "email": user["email"], "title": user["title"] or "", "avatar_data": user["avatar_data"]}
+
+
+@app.put("/api/profile")
+def update_profile(payload: ProfileUpdate, user: sqlite3.Row = Depends(current_user)) -> dict[str, Any]:
+    avatar_data = payload.avatar_data
+    if avatar_data:
+        if not avatar_data.startswith(("data:image/jpeg;base64,", "data:image/png;base64,")):
+            raise HTTPException(422, "Profile photo must be a JPG or PNG image")
+        try:
+            if len(base64.b64decode(avatar_data.split(",", 1)[1], validate=True)) > 5 * 1024 * 1024:
+                raise HTTPException(422, "Profile photo must be 5MB or smaller")
+        except (ValueError, base64.binascii.Error) as exc:
+            raise HTTPException(422, "Profile photo could not be read") from exc
+    with db() as connection:
+        connection.execute("UPDATE users SET name = ?, title = ?, avatar_data = ? WHERE id = ?", (payload.name.strip(), payload.title.strip(), avatar_data, user["id"]))
+        updated = connection.execute("SELECT name,email,title,avatar_data FROM users WHERE id = ?", (user["id"],)).fetchone()
+    return dict(updated)
+
+
+@app.post("/api/profile/password")
+def change_password(payload: PasswordChange, user: sqlite3.Row = Depends(current_user)) -> dict[str, str]:
+    if not verify_password(payload.current_password, user["password"]):
+        raise HTTPException(400, "Current password is incorrect")
+    with db() as connection:
+        connection.execute("UPDATE users SET password = ? WHERE id = ?", (hash_password(payload.new_password), user["id"]))
+    return {"status": "updated"}
+
+
+@app.get("/api/auth/google/start")
+def start_google_auth() -> dict[str, str]:
+    config, client_id, _ = oauth_credentials("google")
+    params = {
+        "client_id": client_id,
+        "redirect_uri": f"{OAUTH_BASE_URL.rstrip('/')}/api/auth/google/callback",
+        "response_type": "code",
+        "scope": "openid email profile",
+        "state": google_auth_state(),
+        "access_type": "offline",
+        "prompt": "select_account",
+    }
+    return {"url": f"{config['authorize']}?{urlencode(params)}"}
+
+
+@app.get("/api/auth/google/callback", response_model=None)
+async def google_auth_callback(code: str | None = None, state: str | None = None, error: str | None = None) -> HTMLResponse | RedirectResponse:
+    if error:
+        return RedirectResponse(f"/?auth_error={error}")
+    if not code or not state:
+        return RedirectResponse("/?auth_error=invalid_google_response")
+    try:
+        payload = jwt.decode(state, JWT_SECRET, algorithms=["HS256"])
+        if payload.get("purpose") != "google_auth":
+            raise jwt.InvalidTokenError("Invalid auth purpose")
+        config, client_id, client_secret = oauth_credentials("google")
+    except (jwt.PyJWTError, HTTPException):
+        return RedirectResponse("/?auth_error=invalid_google_state")
+    try:
+        async with httpx.AsyncClient(timeout=20) as client:
+            token_response = await client.post(
+                config["token"],
+                data={
+                    "grant_type": "authorization_code",
+                    "code": code,
+                    "client_id": client_id,
+                    "client_secret": client_secret,
+                    "redirect_uri": f"{OAUTH_BASE_URL.rstrip('/')}/api/auth/google/callback",
+                },
+                headers={"Accept": "application/json"},
+            )
+            token_response.raise_for_status()
+            access_token = token_response.json().get("access_token")
+            if not access_token:
+                raise ValueError("Provider returned no access token")
+            profile_response = await client.get(config["userinfo"], headers={"Authorization": f"Bearer {access_token}"})
+            profile_response.raise_for_status()
+            profile = profile_response.json()
+        email = str(profile.get("email") or "").lower().strip()
+        name = str(profile.get("name") or profile.get("email") or "Google user").strip()
+        if not email:
+            raise ValueError("Provider returned no email")
+        with db() as connection:
+            user = connection.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+            if not user:
+                user_id = connection.execute("INSERT INTO users (name,email,password,created_at) VALUES (?,?,?,?)", (name, email, hash_password(secrets.token_urlsafe(32)), now())).lastrowid
+                workspace_id = connection.execute("INSERT INTO workspaces (name,created_at) VALUES (?,?)", (f"{name}'s workspace", now())).lastrowid
+                connection.execute("INSERT INTO workspace_memberships (workspace_id,user_id,role,created_at) VALUES (?,?,?,?)", (workspace_id, user_id, "owner", now()))
+                for integration_name, category, description in [("Slack", "Communication", "Send ingestion alerts and daily summaries."), ("HubSpot", "CRM", "Sync normalized contacts to a CRM."), ("Google Sheets", "Workspace", "Publish clean records to a sheet."), ("REST API", "Developer tools", "Connect a client-owned HTTP endpoint.")]:
+                    connection.execute("INSERT INTO integrations (user_id,workspace_id,name,category,status,description) VALUES (?,?,?,?,?,?)", (user_id, workspace_id, integration_name, category, "available", description))
+                user = connection.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+    except (httpx.HTTPError, ValueError, json.JSONDecodeError, sqlite3.IntegrityError):
+        return RedirectResponse("/?auth_error=google_sign_in_failed")
+    token = token_for(user)
+    return HTMLResponse(f"<script>localStorage.setItem('integratehub_token', {json.dumps(token)}); window.location.replace('/');</script>")
 
 
 @app.get("/api/workspaces")
