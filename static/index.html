@@ -3,8 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta id="theme-color-meta" name="theme-color" content="#f5f6fa" />
+    <meta id="theme-color-meta" name="theme-color" content="#f3f5fc" />
     <title>IntegrateHub | Your AI data workspace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
     <script>
       document.documentElement.dataset.theme =
         localStorage.getItem("integratehub_theme") === "dark"
@@ -12,22 +18,30 @@
           : "light";
     </script>
     <script src="https://unpkg.com/lucide@0.468.0"></script>
-    <link rel="stylesheet" href="/styles.css?v=20260927premiumdark2" />
+    <link rel="stylesheet" href="/styles.css?v=20261125frost" />
   </head>
   <body>
+    <div class="ambient" aria-hidden="true">
+      <span></span><span></span><span></span><span></span>
+    </div>
     <div id="toast" class="toast" role="status"></div>
 
     <main id="auth-view" class="auth-view">
       <section class="auth-visual">
         <div class="brand">
-          <span class="brand-glyph" aria-hidden="true"
-            ><i></i><i></i><i></i><i></i></span
+          <span class="brand-mark" aria-hidden="true"
+            ><i data-lucide="sparkles"></i></span
           ><span>IntegrateHub</span>
         </div>
         <div class="visual-copy">
           <p class="kicker">YOUR AI DATA WORKSPACE</p>
           <h1>Connect your data in one place.</h1>
           <p>Bring in data, keep it clean, and help your team move faster.</p>
+          <div class="visual-features">
+            <span><i data-lucide="plug-zap"></i>CSV · Webhook · REST</span>
+            <span><i data-lucide="copy-check"></i>Duplicate detection</span>
+            <span><i data-lucide="sparkles"></i>AI field mapping</span>
+          </div>
           <div class="visual-signal">
             <span class="signal-live"><b></b> WORKSPACE STATUS</span
             ><strong>Your workspace is ready</strong
@@ -54,8 +68,8 @@
         <div class="auth-card">
           <div class="mobile-brand">
             <div class="brand">
-              <span class="brand-glyph" aria-hidden="true"
-                ><i></i><i></i><i></i><i></i></span
+              <span class="brand-mark" aria-hidden="true"
+                ><i data-lucide="sparkles"></i></span
               ><span>IntegrateHub</span>
             </div>
           </div>
@@ -175,8 +189,8 @@
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-top">
           <div class="brand">
-            <span class="brand-glyph" aria-hidden="true"
-              ><i></i><i></i><i></i><i></i></span
+            <span class="brand-mark" aria-hidden="true"
+              ><i data-lucide="sparkles"></i></span
             ><span>IntegrateHub</span>
           </div>
           <label class="workspace-switcher">
@@ -1189,6 +1203,6 @@
         </form>
       </div>
     </div>
-    <script src="/app.js?v=20260927documentdelete"></script>
+    <script src="/app.js?v=20261125frost"></script>
   </body>
 </html>

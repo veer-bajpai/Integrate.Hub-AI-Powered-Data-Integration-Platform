@@ -67,7 +67,7 @@ function applyTheme(theme) {
     button.setAttribute("aria-pressed", String(theme === "dark"));
     button.innerHTML = `<i data-lucide="${theme === "dark" ? "sun" : "moon"}"></i>`;
   });
-  $("#theme-color-meta").content = theme === "dark" ? "#13151a" : "#f5f6fa";
+  $("#theme-color-meta").content = theme === "dark" ? "#0b0f1e" : "#f3f5fc";
   icons();
 }
 
@@ -98,9 +98,9 @@ function initials(name) {
 }
 function renderAvatar(element, profile, sizeClass = "") {
   if (!element) return;
-  element.classList.toggle("has-photo", Boolean(profile?.avatar_data));
   element.className =
     `${element.className.replace(/\bhas-photo\b/g, "").trim()} ${sizeClass}`.trim();
+  element.classList.toggle("has-photo", Boolean(profile?.avatar_data));
   element.innerHTML = profile?.avatar_data
     ? `<img src="${profile.avatar_data}" alt="" />`
     : escapeHtml(initials(profile?.name || "IntegrateHub"));
