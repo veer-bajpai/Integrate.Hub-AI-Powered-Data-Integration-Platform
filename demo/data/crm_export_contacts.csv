@@ -1,0 +1,25 @@
+first_name,last_name,email,company,phone,role
+Anna,Becker,anna.becker@northwind-logistics.example,Northwind Logistics GmbH,+49 30 754 2824,Head of IT
+Jonas,Keller,jonas.keller@alpenblick.example,Alpenblick Software AG,+49 89 125 5506,Compliance Manager
+Sofie,Conti,sofie.conti@kestrel-health.example,Kestrel Health BV,+31 10 350 4657,Data Protection Officer
+Lukas,Brandt,lukas.brandt@brightline-pay.example,Brightline Payments SAS,+33 1 242 2679,COO
+Elena,Bauer,elena.bauer@fjord-analytics.example,Fjord Analytics AS,+47 22 792 9935,CTO
+Mateo,Jansen,mateo.jansen@corvid-robotics.example,Corvid Robotics GmbH,+49 711 189 7912,Operations Director
+Clara,Berg,clara.berg@lumen-retail.example,Lumen Retail SL,+34 91 132 1488,Head of Information Security
+Felix,Romero,felix.romero@halden-insurance.example,Halden Insurance Oy,+358 9 195 4582,CISO
+Ingrid,Lemaire,ingrid.lemaire@tessera-cloud.example,Tessera Cloud Ltd,+353 1 338 9279,IT Security Lead
+Marco,Huber,marco.huber@vireo-mobility.example,Vireo Mobility GmbH,+43 1 716 1434,VP Engineering
+Lea,Dubois,lea.dubois@saffron-foods.example,Saffron Foods SpA,+39 02 674 4257,Head of IT
+Henrik,Laurent,henrik.laurent@quillon.example,Quillon Legal Tech BV,+31 20 833 9928,Compliance Manager
+Camille,Holm,camille.holm@northwind-logistics.example,Northwind Logistics GmbH,+49 30 529 4611,Data Protection Officer
+Niklas,Lindqvist,niklas.lindqvist@alpenblick.example,Alpenblick Software AG,+49 89 559 5557,COO
+Aisha,Virtanen,aisha.virtanen@kestrel-health.example,Kestrel Health BV,+31 10 928 1106,CTO
+Tobias,Nieminen,tobias.nieminen@brightline-pay.example,Brightline Payments SAS,+33 1 877 3615,Operations Director
+Marta,De Vries,marta.devries@fjord-analytics.example,Fjord Analytics AS,+47 22 814 7924,Head of Information Security
+Oskar,Martín,oskar.martin@corvid-robotics.example,Corvid Robotics GmbH,+49 711 448 5552,CISO
+Julia,Novak,julia.novak@lumen-retail.example,Lumen Retail SL,+34 91 259 4527,IT Security Lead
+Emil,Visser,emil.visser@halden-insurance.example,Halden Insurance Oy,+358 9 881 6514,VP Engineering
+Noor,Kowalski,noor.kowalski@tessera-cloud.example,Tessera Cloud Ltd,+353 1 204 2519,Head of IT
+Pieter,Sørensen,pieter.sorensen@vireo-mobility.example,Vireo Mobility GmbH,+43 1 489 2584,Compliance Manager
+Chiara,Rossi,chiara.rossi@saffron-foods.example,Saffron Foods SpA,+39 02 467 6635,Data Protection Officer
+Mateo,Jansen,mateo.jansen@corvid-robotics.example,Corvid Robotics GmbH,+49 711 189 7912,Operations Director

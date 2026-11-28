@@ -1,0 +1,113 @@
+{
+  "data": [
+    {
+      "id": "pa-1001",
+      "firstName": "Johan",
+      "lastName": "Brandt",
+      "emailAddress": "johan.brandt@vireo-mobility.example",
+      "organization": "Vireo Mobility GmbH",
+      "jobTitle": "COO",
+      "mobile": "+43 1 891 5741"
+    },
+    {
+      "id": "pa-1002",
+      "firstName": "Paula",
+      "lastName": "Bauer",
+      "emailAddress": "paula.bauer@saffron-foods.example",
+      "organization": "Saffron Foods SpA",
+      "jobTitle": "CTO",
+      "mobile": "+39 02 181 4814"
+    },
+    {
+      "id": "pa-1003",
+      "firstName": "Erik",
+      "lastName": "Jansen",
+      "emailAddress": "erik.jansen@quillon.example",
+      "organization": "Quillon Legal Tech BV",
+      "jobTitle": "Operations Director",
+      "mobile": "+31 20 987 2654"
+    },
+    {
+      "id": "pa-1004",
+      "firstName": "Zofia",
+      "lastName": "Berg",
+      "emailAddress": "zofia.berg@northwind-logistics.example",
+      "organization": "Northwind Logistics GmbH",
+      "jobTitle": "Head of Information Security",
+      "mobile": "+49 30 489 5554"
+    },
+    {
+      "id": "pa-1005",
+      "firstName": "Luca",
+      "lastName": "Romero",
+      "emailAddress": "luca.romero@alpenblick.example",
+      "organization": "Alpenblick Software AG",
+      "jobTitle": "CISO",
+      "mobile": "+49 89 564 6977"
+    },
+    {
+      "id": "pa-1006",
+      "firstName": "Maja",
+      "lastName": "Lemaire",
+      "emailAddress": "maja.lemaire@kestrel-health.example",
+      "organization": "Kestrel Health BV",
+      "jobTitle": "IT Security Lead",
+      "mobile": "+31 10 266 7065"
+    },
+    {
+      "id": "pa-1007",
+      "firstName": "Arne",
+      "lastName": "Huber",
+      "emailAddress": "arne.huber@brightline-pay.example",
+      "organization": "Brightline Payments SAS",
+      "jobTitle": "VP Engineering",
+      "mobile": "+33 1 463 4432"
+    },
+    {
+      "id": "pa-1008",
+      "firstName": "Jonas",
+      "lastName": "Keller",
+      "emailAddress": "jonas.keller@alpenblick.example",
+      "organization": "Alpenblick Software AG",
+      "jobTitle": "Compliance Manager",
+      "mobile": "+49 89 125 5506"
+    },
+    {
+      "id": "pa-1009",
+      "firstName": "Hanna",
+      "lastName": "Andersen",
+      "emailAddress": "hanna.andersen@northwind-logistics.example",
+      "organization": "Northwind Logistics GmbH",
+      "jobTitle": "CTO",
+      "mobile": "+49 30 926 1711"
+    },
+    {
+      "id": "pa-1010",
+      "firstName": "Henrik",
+      "lastName": "Laurent",
+      "emailAddress": "henrik.laurent@quillon.example",
+      "organization": "Quillon Legal Tech BV",
+      "jobTitle": "Compliance Manager",
+      "mobile": "+31 20 833 9928"
+    },
+    {
+      "id": "pa-1011",
+      "firstName": "Laura",
+      "lastName": "Becker",
+      "emailAddress": "laura.becker@lumen-retail.example",
+      "organization": "Lumen Retail SL",
+      "jobTitle": "Head of IT",
+      "mobile": "+34 91 691 4150"
+    },
+    {
+      "id": "pa-1012",
+      "firstName": "Oskar",
+      "lastName": "Martín",
+      "emailAddress": "oskar.martin@corvid-robotics.example",
+      "organization": "Corvid Robotics GmbH",
+      "jobTitle": "CISO",
+      "mobile": "+49 711 448 5552"
+    }
+  ],
+  "next_cursor": null
+}

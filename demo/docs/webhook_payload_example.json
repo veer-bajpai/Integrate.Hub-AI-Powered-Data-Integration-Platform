@@ -1,0 +1,13 @@
+{
+  "event_id": "evt_9000",
+  "type": "demo_request.submitted",
+  "given_name": "Anna",
+  "family_name": "Dubois",
+  "work_email": "anna.dubois@fjord-analytics.example",
+  "company_name": "Fjord Analytics AS",
+  "title": "Head of IT",
+  "interest": "ISO 27001",
+  "_headers": {
+    "X-Webhook-Signature": "sha256=<hex HMAC-SHA256 of the canonical JSON body>"
+  }
+}

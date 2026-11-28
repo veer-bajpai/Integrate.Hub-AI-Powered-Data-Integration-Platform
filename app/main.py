@@ -1036,7 +1036,7 @@ def suggest_mapping(payload: MappingRequest, user: sqlite3.Row = Depends(current
     guesses = {}
     for field in CANONICAL_FIELDS:
         aliases = {"first_name": ["first", "given"], "last_name": ["last", "surname", "family"], "email": ["email", "mail"], "company": ["company", "organization", "account"], "phone": ["phone", "mobile", "tel"], "role": ["role", "title", "job"]}[field]
-        source = next((part.strip(' \"\\n,:') for part in payload.sample.split(',') if any(alias in part.lower() for alias in aliases)), None)
+        source = next((part.strip(' "\n,:') for part in payload.sample.split(',') if any(alias in part.lower() for alias in aliases)), None)
         guesses[field] = {"source": source, "confidence": 0.92 if source else 0.0}
     return {"mapping": guesses, "provider": "local-fallback"}
 
